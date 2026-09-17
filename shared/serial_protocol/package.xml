@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>serial_protocol</name>
+  <version>0.1.0</version>
+  <description>Framed serial protocol (COBS + CRC16) and message definitions shared by the ASEP-boat ESP32 firmware and the Pi.</description>
+  <maintainer email="motokinakajima0912@gmail.com">Motoki Nakajima</maintainer>
+  <license>TODO</license>
+ 
+  <buildtool_depend>ament_cmake</buildtool_depend>
+ 
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,13 @@
+{
+  "name": "serial_protocol",
+  "version": "0.1.0",
+  "description": "Framed serial protocol (COBS + CRC16) and message definitions shared by the ASEP-boat ESP32 firmware and the Pi.",
+  "frameworks": "*",
+  "platforms": "*",
+  "build": {
+    "includeDir": "include",
+    "srcDir": "src",
+    "flags": "-std=gnu++17",
+    "unflags": "-std=gnu++11"
+  }
+}

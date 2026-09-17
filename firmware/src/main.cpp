@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+#include <serial_protocol/parser.h>
+
 // put function declarations here:
 int myFunction(int, int);
 
