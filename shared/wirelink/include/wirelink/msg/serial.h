@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wirelink/framing.h>
+#include <wirelink/msg/common.h>
 
 namespace wirelink::msg::serial {
 
@@ -66,19 +67,8 @@ namespace wirelink::msg::serial {
 
     struct PeerTable {
         constexpr static MsgType TYPE = MsgType::PeerTable;
-        
-        struct PeerEntry {
-            uint8_t id;
-            int32_t lat;
-            int32_t lon;
-            float scalar;
-            uint32_t age_ms;
 
-            template <class F>
-            void fields (F& f) { f(id); f(lat); f(lon); f(scalar); f(age_ms); }
-        };
-
-        wirelink::List<PeerEntry, MAX_PEER> peer_entries;
+        wirelink::List<wirelink::msg::common::PeerEntry, MAX_PEER> peer_entries;
 
         template <class F>
         void fields (F& f) { f(peer_entries); }
@@ -102,18 +92,8 @@ namespace wirelink::msg::serial {
         uint8_t boat_id;
         uint8_t gate_state;
         uint16_t fault_flags;
-        
-        struct LinkStatus {
-            uint8_t id;
-            float rssi;
-            float snr;
-            uint32_t lost_packets;
 
-            template <class F>
-            void fields (F& f) { f(id); f(rssi); f(snr); f(lost_packets); }
-        };
-
-        wirelink::List<LinkStatus, MAX_PEER> links;
+        wirelink::List<wirelink::msg::common::LinkStatus, MAX_PEER> links;
 
         template <class F>
         void fields (F& f) { f(boat_id); f(gate_state); f(fault_flags); f(links); }
