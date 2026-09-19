@@ -5,10 +5,13 @@
 namespace wirelink::msg::lora {
 
     enum class MsgType : uint8_t {
-        Config = 1,
-        Heartbeat = 2,
-        Command = 3,
-        Status = 4,
-        BroadcastPayload = 5,
+        // peer-to-peer
+        SelfStatus = 1,
+
+        // land-to-peer
+        Command = 2,
+
+        // peer-to-land
+        Status = 3,
     };
 }

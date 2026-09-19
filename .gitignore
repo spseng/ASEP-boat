@@ -32,3 +32,38 @@
 *.app
 
 .vscode/
+
+# --- PlatformIO ---
+.pio/
+.pioenvs/
+.piolibdeps/
+ 
+# --- ROS2 / colcon ---
+build/
+install/
+log/
+ 
+# --- CMake ---
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+compile_commands.json
+ 
+# --- host tests ---
+test_wirelink.cpp
+test_wirelink.exe
+*.out
+*.exe
+*.o
+*.a
+*.obj
+*.ilk
+*.pdb
+ 
+# --- editors / OS ---
+.vscode/ipch/
+.vscode/browse.vc.db*
+.vscode/c_cpp_properties.json
+.DS_Store
+Thumbs.db
