@@ -1,5 +1,7 @@
 #include "MotorController.h"
 
+#include <boat_defs/boat_defs.h>
+
 #include "config.h"
 #include "pins.h"
 
@@ -34,7 +36,7 @@ bool MotorController::make_channel(uint8_t gpio, mcpwm_cmpr_handle_t* cmpr) {
         MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, cmp,
                                        MCPWM_GEN_ACTION_LOW)) != ESP_OK) return false;
 
-    mcpwm_comparator_set_compare_value(cmp, NEUTRAL_US);
+    mcpwm_comparator_set_compare_value(cmp, boat::esc::PWM_NEUTRAL_US);
     *cmpr = cmp;
     return true;
 }
@@ -43,9 +45,9 @@ bool MotorController::pwm_begin() {
     mcpwm_timer_config_t timerCfg = {};
     timerCfg.group_id      = 0;
     timerCfg.clk_src       = MCPWM_TIMER_CLK_SRC_DEFAULT;
-    timerCfg.resolution_hz = 1000000;      // 1 MHz -> 1 tick = 1 us
+    timerCfg.resolution_hz = config::esc_pwm::RESOLUTION_HZ;
     timerCfg.count_mode    = MCPWM_TIMER_COUNT_MODE_UP;
-    timerCfg.period_ticks  = 20000;        // 20 ms frame = 50 Hz
+    timerCfg.period_ticks  = config::esc_pwm::PERIOD_TICKS;
     if (mcpwm_new_timer(&timerCfg, &s_timer) != ESP_OK) {
         return false;
     }

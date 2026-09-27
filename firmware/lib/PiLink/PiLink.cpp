@@ -2,11 +2,12 @@
 
 #include "config.h"
 #include <Arduino.h>
+#include <boat_defs/boat_defs.h>
 
 PiLink::PiLink() : link(), received_states() {}
 
 void PiLink::begin() {
-    Serial.begin(config::serial::BAUD_RATE);
+    Serial.begin(boat::serial::BAUD_RATE);
 }
 
 bool PiLink::update() {
