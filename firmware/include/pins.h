@@ -23,4 +23,7 @@ namespace pins {
     // External
     constexpr uint8_t ESC_PORT = 5;
     constexpr uint8_t ESC_STBD = 6;
+
+    constexpr uint8_t IMU_SDA = 41;
+    constexpr uint8_t IMU_SCL = 42;
 }

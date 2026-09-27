@@ -12,8 +12,9 @@ public:
 private:
     PiLink& piLink;
     
-    static mcpwm_timer_handle_t s_timer;
-    static mcpwm_cmpr_handle_t s_cmprPort, s_cmprStbd;
+    static inline mcpwm_timer_handle_t s_timer = nullptr;
+    static inline mcpwm_cmpr_handle_t s_cmprPort = nullptr;
+    static inline mcpwm_cmpr_handle_t s_cmprStbd = nullptr;
 
     bool make_channel(uint8_t gpio, mcpwm_cmpr_handle_t* cmpr);
 

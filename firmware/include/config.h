@@ -10,6 +10,12 @@ namespace config {
         constexpr uint32_t PERIOD_TICKS = RESOLUTION_HZ / FREQUENCY; // 20 ms frame
     }
 
+    namespace imu {
+        constexpr uint8_t I2C_ADDRESS = 0x28;
+        constexpr uint8_t I2C_ADDRESS_ALT = 0x29;
+        constexpr uint32_t I2C_SPEED_HZ = 100000; // 100 kHz
+    }
+
     namespace radio {
         constexpr float TCXO_VOLTAGE = 1.8;
         constexpr float FREQUENCY = 915.0;

@@ -1,5 +1,6 @@
 #include "MotorController.h"
 
+#include <wirelink/wirelink.h>
 #include <boat_defs/boat_defs.h>
 
 #include "config.h"
@@ -9,6 +10,12 @@ MotorController::MotorController(PiLink& piLink) : piLink(piLink) {}
 
 void MotorController::begin() {
     pwm_begin();
+}
+
+void MotorController::update() {
+    auto msg = piLink.received_states.poll<wirelink::msg::serial::MotorCommand>(wirelink::msg::serial::MsgType::MotorCommand);
+    if (!msg) return;
+    pwm_write(msg->pwm_port, msg->pwm_starboard);
 }
 
 bool MotorController::make_channel(uint8_t gpio, mcpwm_cmpr_handle_t* cmpr) {
