@@ -9,7 +9,7 @@ public:
 
     void begin();
 
-    bool loop();
+    bool update();
 
     bool send(const wirelink::Frame& frame);
 

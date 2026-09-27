@@ -1,6 +1,6 @@
 #include "PiLink.h"
 
-#include <config.h>
+#include "config.h"
 #include <Arduino.h>
 
 PiLink::PiLink() : link(), received_states() {}
@@ -9,7 +9,7 @@ void PiLink::begin() {
     Serial.begin(config::serial::BAUD_RATE);
 }
 
-bool PiLink::loop() {
+bool PiLink::update() {
     while (Serial.available()) {
         uint8_t b = Serial.read();
         auto frame = link.feed(b);

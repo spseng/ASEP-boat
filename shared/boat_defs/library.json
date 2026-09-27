@@ -1,0 +1,13 @@
+{
+  "name": "boat_defs",
+  "version": "0.1.0",
+  "description": "Shared definitions for the ASEP-boat ESP32 firmware and the Pi.",
+  "frameworks": "*",
+  "platforms": "*",
+  "build": {
+    "includeDir": "include",
+    "srcDir": "src",
+    "flags": "-std=gnu++17",
+    "unflags": "-std=gnu++11"
+  }
+}

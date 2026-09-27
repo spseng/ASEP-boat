@@ -2,6 +2,7 @@
 #include <cstdint>
 
 namespace pins {
+    // Default
     constexpr uint8_t RADIO_CS = 8;
     constexpr uint8_t RADIO_SCK = 9;
     constexpr uint8_t RADIO_MOSI = 10;
@@ -18,4 +19,8 @@ namespace pins {
 
     constexpr uint8_t LED = 35;
     constexpr uint8_t PRG_BTN = 0;
+
+    // External
+    constexpr uint8_t ESC_PORT = 5;
+    constexpr uint8_t ESC_STBD = 6;
 }
