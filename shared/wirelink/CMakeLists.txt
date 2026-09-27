@@ -3,7 +3,7 @@ project(wirelink LANGUAGES CXX)
  
 find_package(ament_cmake REQUIRED)
  
-add_library(wirelink STATIC src/parser.cpp)
+add_library(wirelink STATIC src/framing.cpp)
 target_compile_features(wirelink PUBLIC cxx_std_17)
 set_target_properties(wirelink PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(wirelink PUBLIC
