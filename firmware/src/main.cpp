@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include <wirelink/wirelink.h>
+#include <ReceivedStates.h>
 
 // put function declarations here:
 int myFunction(int, int);

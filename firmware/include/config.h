@@ -1,6 +1,10 @@
 #pragma once
 
 namespace config {
+    namespace serial {
+        constexpr int BAUD_RATE = 115200;
+    }
+
     namespace radio {
         constexpr float TCXO_VOLTAGE = 1.8;
         constexpr float FREQUENCY = 915.0;
