@@ -1,0 +1,16 @@
+services:
+  ros:
+    build: .
+    volumes:
+      - .:/ws/src/ASEP-boat
+      - build:/ws/build
+      - install:/ws/install
+      - log:/ws/log
+    ports:
+      - "8765:8765"
+    stdin_open: true
+    tty: true
+volumes:
+  build:
+  install:
+  log:
