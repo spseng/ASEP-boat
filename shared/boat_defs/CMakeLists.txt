@@ -3,10 +3,10 @@ project(boat_defs LANGUAGES CXX)
  
 find_package(ament_cmake REQUIRED)
  
-add_library(boat_defs)
-target_compile_features(boat_defs PUBLIC cxx_std_17)
+add_library(boat_defs INTERFACE)
+target_compile_features(boat_defs INTERFACE cxx_std_17)
 set_target_properties(boat_defs PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_include_directories(boat_defs PUBLIC
+target_include_directories(boat_defs INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
 )
