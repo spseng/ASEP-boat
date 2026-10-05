@@ -7,6 +7,16 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+
+find_package(rclcpp REQUIRED)
+find_package(msgs REQUIRED)
+
+add_executable(engineer src/engineer.cpp)
+target_compile_features(engineer PUBLIC cxx_std_17)
+target_link_libraries(engineer PUBLIC rclcpp::rclcpp ${msgs_TARGETS})
+
+install(TARGETS engineer DESTINATION lib/${PROJECT_NAME})
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)

@@ -7,9 +7,26 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+
+find_package(rclcpp REQUIRED)
+find_package(msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(boat_defs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+
+add_executable(swarm_captain src/swarm_captain.cpp)
+target_compile_features(swarm_captain PUBLIC cxx_std_17)
+target_link_libraries(swarm_captain PUBLIC rclcpp::rclcpp ${msgs_TARGETS} ${std_msgs_TARGETS} ${geometry_msgs_TARGETS} ${nav_msgs_TARGETS} Eigen3::Eigen boat_defs::boat_defs)
+
+target_include_directories(
+  swarm_captain PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
