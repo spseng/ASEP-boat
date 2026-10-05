@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e
+source /opt/ros/jazzy/setup.bash
+cd /ws
+colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "$@"
+shopt -s nullglob
+files=(build/*/compile_commands.json)
+if [ ${#files[@]} -gt 0 ]; then
+  jq -s 'add' "${files[@]}" > build/compile_commands.json
+fi
