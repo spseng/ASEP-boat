@@ -11,6 +11,13 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
+
+add_executable(helmsman src/helmsman.cpp)
+target_compile_features(helmsman PUBLIC cxx_std_17)
+target_link_libraries(helmsman PUBLIC rclcpp::rclcpp ${geometry_msgs_TARGETS})
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights

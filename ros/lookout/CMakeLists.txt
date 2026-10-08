@@ -11,6 +11,20 @@ find_package(ament_cmake REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+find_package(rclcpp REQUIRED)
+find_package(msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+list(APPEND CMAKE_MODULE_PATH "/usr/share/cmake/geographiclib")
+find_package(GeographicLib REQUIRED)
+
+add_executable(lookout src/lookout.cpp)
+target_compile_features(lookout PUBLIC cxx_std_17)
+target_link_libraries(lookout PUBLIC rclcpp::rclcpp  ${msgs_TARGETS} ${geometry_msgs_TARGETS} ${std_msgs_TARGETS} ${nav_msgs_TARGETS} Eigen3::Eigen ${GeographicLib_LIBRARIES})
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
