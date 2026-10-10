@@ -25,6 +25,9 @@ add_executable(lookout src/lookout.cpp)
 target_compile_features(lookout PUBLIC cxx_std_17)
 target_link_libraries(lookout PUBLIC rclcpp::rclcpp  ${msgs_TARGETS} ${geometry_msgs_TARGETS} ${std_msgs_TARGETS} ${nav_msgs_TARGETS} Eigen3::Eigen ${GeographicLib_LIBRARIES})
 
+install(TARGETS lookout
+  DESTINATION lib/${PROJECT_NAME})
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights

@@ -23,6 +23,9 @@ add_executable(swarm_captain src/swarm_captain.cpp)
 target_compile_features(swarm_captain PUBLIC cxx_std_17)
 target_link_libraries(swarm_captain PUBLIC rclcpp::rclcpp ${msgs_TARGETS} ${std_msgs_TARGETS} ${geometry_msgs_TARGETS} ${nav_msgs_TARGETS} Eigen3::Eigen boat_defs::boat_defs)
 
+install(TARGETS swarm_captain
+  DESTINATION lib/${PROJECT_NAME})
+
 target_include_directories(
   swarm_captain PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

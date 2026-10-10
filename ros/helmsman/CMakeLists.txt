@@ -18,6 +18,9 @@ add_executable(helmsman src/helmsman.cpp)
 target_compile_features(helmsman PUBLIC cxx_std_17)
 target_link_libraries(helmsman PUBLIC rclcpp::rclcpp ${geometry_msgs_TARGETS})
 
+install (TARGETS helmsman
+  DESTINATION lib/${PROJECT_NAME})
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
