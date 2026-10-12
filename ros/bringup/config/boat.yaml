@@ -1,0 +1,11 @@
+swarm_captain:
+  ros__parameters:
+    k_avoidance: 1.0
+    k_cohesion: 1.0
+    k_descent: 1.0
+
+    avoidance_radius: 1.0
+    cohesion_saturation_distance: 1.0
+    cohesion_max: 1.0
+    eps: 1e-6
+
