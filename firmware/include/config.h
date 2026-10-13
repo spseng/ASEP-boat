@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <boat_defs/boat_defs.h>
 
 namespace config {
 
@@ -18,9 +19,9 @@ namespace config {
 
     namespace radio {
         constexpr float TCXO_VOLTAGE = 1.8;
-        constexpr float FREQUENCY = 915.0;
-        constexpr float BANDWIDTH = 125.0;
-        constexpr uint8_t SPREADING_FACTOR = 7;
-        constexpr uint8_t POWER = 14;
+        constexpr float FREQUENCY = boat::lora::config::FREQUENCY; // kHz
+        constexpr float BANDWIDTH = boat::lora::config::BANDWIDTH;
+        constexpr uint8_t SPREADING_FACTOR = boat::lora::config::SPREADING_FACTOR;
+        constexpr uint8_t POWER = 22; // dBm
     }
 }

@@ -19,6 +19,7 @@ namespace wirelink::codec {
         void operator()(uint16_t& v) { v = static_cast<uint16_t>(get(2)); }
         void operator()(uint32_t& v) { v = static_cast<uint32_t>(get(4)); }
         void operator()(uint64_t& v) { v = get(8); }
+        void operator()(int16_t& v)  { v = static_cast<int16_t>(static_cast<uint16_t>(get(2))); }
         void operator()(int32_t& v)  { v = static_cast<int32_t>(static_cast<uint32_t>(get(4))); }
         void operator()(float& v)    { uint32_t u = static_cast<uint32_t>(get(4)); std::memcpy(&v, &u, sizeof u); }
         void operator()(bytes::Payload& p) {
@@ -36,7 +37,7 @@ namespace wirelink::codec {
             for (size_t i = 0; i < list.count; ++i) list.items[i].fields(*this);
         }
 
-        template <class T> void operator()(T&) = delete;
+        template <class T> void operator()(T& v) { v.fields(*this); }
 
     private:
         uint64_t get(size_t n) {
@@ -58,6 +59,7 @@ namespace wirelink::codec {
         void operator()(uint32_t v) { put(v, 4); }
         void operator()(uint64_t v) { put(v, 8); }
         void operator()(int32_t v)  { put(static_cast<uint32_t>(v), 4); }
+        void operator()(int16_t v)  { put(static_cast<uint16_t>(v), 2); }
         void operator()(float v)    { uint32_t u; std::memcpy(&u, &v, sizeof u); put(u, 4); }
         void operator()(bytes::Payload& p) {
             if (p.len > p.data.size()) { ok = false; return; }
@@ -72,7 +74,7 @@ namespace wirelink::codec {
             for (size_t i = 0; i < list.count; ++i) list.items[i].fields(*this);
         }
 
-        template <class T> void operator()(T) = delete;
+        template <class T> void operator()(T& v) { v.fields(*this); }
 
     private:
         void put(uint64_t v, size_t n) {
