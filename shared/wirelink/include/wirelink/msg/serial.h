@@ -18,7 +18,7 @@ namespace wirelink::msg::serial {
 
         //downstream
         MotorCommand = 7,
-        BroadcastPayload = 8,
+        BroadcastEntry = 8,
         Config = 9,
         Heartbeat = 10,
     };
@@ -84,7 +84,12 @@ namespace wirelink::msg::serial {
 
     struct ReceivedCommand {
         constexpr static MsgType TYPE = MsgType::ReceivedCommand;
-        //TODO Implement
+        
+        uint8_t lora_type;
+        wirelink::bytes::Payload payload;
+
+        template <class F>
+        void fields (F& f) { f(lora_type); f(payload); }
     };
 
     struct Status {
@@ -108,14 +113,12 @@ namespace wirelink::msg::serial {
         void fields (F& f) { f(pwm_port); f(pwm_starboard); }
     };
 
-    struct BroadcastPayload {
-        constexpr static MsgType TYPE = MsgType::BroadcastPayload;
-        int32_t lat;
-        int32_t lon;
-        float scalar;
+    struct BroadcastEntry {
+        constexpr static MsgType TYPE = MsgType::BroadcastEntry;
+        wirelink::msg::common::PeerEntry self;
 
         template <class F>
-        void fields (F& f) { f(lat); f(lon); f(scalar); }
+        void fields (F& f) { f(self); }
     };
 
     struct Config {

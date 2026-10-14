@@ -8,9 +8,9 @@ namespace wirelink::msg::common {
         int32_t lat;
         int32_t lon;
         float scalar;
-        uint32_t age_ms;
+
         template <class F>
-        void fields (F& f) { f(id); f(lat); f(lon); f(scalar); f(age_ms); }
+        void fields (F& f) { f(id); f(lat); f(lon); f(scalar); }
     };
 
     struct LinkStatus {

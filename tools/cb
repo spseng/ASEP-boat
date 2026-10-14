@@ -1,10 +1,20 @@
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
+
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"
+WS="${ASEP_WS:-$(cd "$(dirname "$SELF")/../../.." && pwd)}"
+
 source /opt/ros/jazzy/setup.bash
-cd /ws
-colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "$@"
-shopt -s nullglob
-files=(build/*/compile_commands.json)
-if [ ${#files[@]} -gt 0 ]; then
-  jq -s 'add' "${files[@]}" > build/compile_commands.json
+cd "$WS"
+colcon build \
+  --symlink-install \
+  --parallel-workers 2 \
+  --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "$@"
+
+if command -v jq >/dev/null 2>&1; then
+  shopt -s nullglob
+  files=(build/*/compile_commands.json)
+  if [ ${#files[@]} -gt 0 ]; then
+    jq -s 'add' "${files[@]}" > build/compile_commands.json
+  fi
 fi

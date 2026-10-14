@@ -30,7 +30,7 @@ public:
 private:
     constexpr static wirelink::msg::serial::MsgType receive_types[] = {
         wirelink::msg::serial::MsgType::MotorCommand,
-        wirelink::msg::serial::MsgType::BroadcastPayload,
+        wirelink::msg::serial::MsgType::BroadcastEntry,
         wirelink::msg::serial::MsgType::Config,
         wirelink::msg::serial::MsgType::Heartbeat,
     };
