@@ -7,6 +7,14 @@ namespace wirelink::msg::lora {
 
     constexpr size_t MAX_LORA_PAYLOAD = 64;
 
+    constexpr uint8_t get_mode(uint8_t state)  { return state & 0x0F; }
+    constexpr uint8_t get_armed(uint8_t state) { return (state >> 4) & 0x01; }
+    constexpr uint8_t get_gate(uint8_t state)  { return (state >> 5) & 0x01; }
+    
+    constexpr uint8_t make_state(uint8_t mode, uint8_t armed, uint8_t gate) {
+        return (mode & 0x0F) | ((armed & 0x01) << 4) | ((gate & 0x01) << 5);
+    }
+
     enum class MsgType : uint8_t {
         Disable = 0,
 

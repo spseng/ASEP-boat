@@ -4,7 +4,7 @@
 
 namespace boat::lora {
     namespace config {
-        constexpr float FREQUENCY = 915.0;
+        constexpr float FREQUENCY = 915.0; // kHz
         constexpr float BANDWIDTH = 500.0; // kHz
         constexpr uint8_t SPREADING_FACTOR = 6;
     }
