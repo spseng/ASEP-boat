@@ -7,9 +7,33 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+
+find_package(rclcpp REQUIRED)
+find_package(msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(boat_defs REQUIRED)
+find_package(wirelink REQUIRED)
+
+add_executable(mcu_bridge src/mcu_bridge.cpp)
+target_compile_features(mcu_bridge PUBLIC cxx_std_17)
+target_link_libraries(mcu_bridge PUBLIC rclcpp::rclcpp ${msgs_TARGETS} ${std_msgs_TARGETS} ${geometry_msgs_TARGETS} ${nav_msgs_TARGETS} ${sensor_msgs_TARGETS} Eigen3::Eigen boat_defs::boat_defs wirelink::wirelink)
+
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+
+install(TARGETS mcu_bridge
+  DESTINATION lib/${PROJECT_NAME})
+
+target_include_directories(
+  mcu_bridge PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
