@@ -24,4 +24,8 @@ namespace config {
         constexpr uint8_t SPREADING_FACTOR = boat::lora::config::SPREADING_FACTOR;
         constexpr uint8_t POWER = 22; // dBm
     }
+
+    namespace ground_link {
+        constexpr uint32_t BAUD_RATE = 115200;
+    }
 }
