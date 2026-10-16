@@ -1,3 +1,7 @@
+mcu_bridge:
+  ros__parameters:
+    mcu_serial_port: "/dev/mcu"
+
 swarm_captain:
   ros__parameters:
     k_avoidance: 1.0
@@ -8,5 +12,3 @@ swarm_captain:
     cohesion_saturation_distance: 1.0
     cohesion_max: 1.0
     eps: 1e-6
-
-    mcu_serial_port: /dev/mcu
