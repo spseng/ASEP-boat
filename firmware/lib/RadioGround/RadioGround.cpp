@@ -100,6 +100,10 @@ void Radio::transmit() {
             last_receive_tx_id = my_tx_id;
             schedule_next_transmit();
         }
+
+        if (st == RADIOLIB_ERR_NONE) { groundLink.echo_lora_transmission(packet.value()); }
+
+
         return;
     } else {
         auto packet = groundLink.get_last_received_packet();
@@ -114,7 +118,8 @@ void Radio::transmit() {
             schedule_next_transmit();
         }
 
-        groundLink.echo_lora_transmission(packet);
+        if (st == RADIOLIB_ERR_NONE) { groundLink.echo_lora_transmission(packet); }
+
         return;
     }
 }
