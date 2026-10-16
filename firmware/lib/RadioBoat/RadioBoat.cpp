@@ -75,6 +75,7 @@ void Radio::receive() {
                 wirelink::msg::serial::ReceivedCommand command;
                 command.lora_type = frame->type;
                 command.payload = frame->payload;
+                command.payload.len = frame->len;
                 wirelink::Frame out_frame;
                 if (wirelink::codec::pack(command, out_frame)) {
                     piLink.send(out_frame);

@@ -8,11 +8,13 @@
 #include "msgs/msg/mcu_status.hpp"
 #include "msgs/msg/peer_table.hpp"
 #include "nav_msgs/msg/odometry.hpp"
+#include "sensor_msgs/msg/nav_sat_fix.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 
 class McuBridge : public rclcpp::Node {
 public:
-    McuBridge() : Node("mcu_bridge"){} // TODO: Implement
+    McuBridge();
 private:
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr scalar_sub_;
@@ -24,4 +26,12 @@ private:
     rclcpp::Publisher<msgs::msg::CommandFrame>::SharedPtr command_frame_pub_;
     rclcpp::Publisher<msgs::msg::McuStatus>::SharedPtr mcu_status_pub_;
     rclcpp::Publisher<msgs::msg::PeerTable>::SharedPtr peer_table_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr gps_fix_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr gps_vel_pub_;
+
+    void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg);
+    void scalar_callback(const std_msgs::msg::Float64::SharedPtr msg);
+    void mode_callback(const msgs::msg::Mode::SharedPtr msg);
+    void heart_beat_callback(const msgs::msg::HeartBeat::SharedPtr msg);
+    void motor_pwm_callback(const msgs::msg::MotorPwm::SharedPtr msg);
 };
