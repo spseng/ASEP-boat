@@ -7,6 +7,7 @@ Radio::Radio(GroundLink& groundlink) : groundLink(groundlink) {
     tx_flag = false;
     rx_flag = false;
     may_transmit = false;
+    my_next_transmit_us = micros();
 
     my_tx_id = boat::ids::GROUND_STATION_ID;
     seq = 0;
@@ -35,7 +36,7 @@ void Radio::update() {
             tx_flag = false;
             sx1262.finishTransmit();
             sx1262.startReceive();
-            last_receive_us = micros();
+            last_receive_us = my_next_transmit_us;
             last_receive_tx_id = my_tx_id;
             schedule_next_transmit();
         }else {
@@ -91,7 +92,7 @@ void Radio::transmit() {
         if (!packet) { return; }
         seq++;
         
-        int st = sx1262.transmit(packet->data.data(), packet->len);
+        int st = sx1262.startTransmit(packet->data.data(), packet->len);
         if (st == RADIOLIB_ERR_NONE) {
             tx_flag = true;
         } else {
@@ -103,12 +104,11 @@ void Radio::transmit() {
 
         if (st == RADIOLIB_ERR_NONE) { groundLink.echo_lora_transmission(packet.value()); }
 
-
         return;
     } else {
         auto packet = groundLink.get_last_received_packet();
         
-        int st = sx1262.transmit(packet.data.data(), packet.len);
+        int st = sx1262.startTransmit(packet.data.data(), packet.len);
         if (st == RADIOLIB_ERR_NONE) {
             tx_flag = true;
         } else {

@@ -27,6 +27,10 @@ McuBridge::McuBridge() : Node("mcu_bridge") {
     raw_scalar_pub_ = this->create_publisher<std_msgs::msg::Float64>("raw_scalar", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
 }
 
+McuBridge::~McuBridge() {
+    if (serial_fd_ >= 0) ::close(serial_fd_);
+}
+
 void McuBridge::odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
 
 }
@@ -64,6 +68,23 @@ void McuBridge::init_serial() {
     tio.c_cc[VTIME] = 0;
     tcsetattr(serial_fd_, TCSANOW, &tio);
     tcflush(serial_fd_, TCIOFLUSH);
+}
+
+bool McuBridge::send_packet(wirelink::bytes::Packet& packet) {
+    std::lock_guard<std::mutex> lock(tx_mutex_);
+    const uint8_t* data = packet.data.data();
+    size_t len = packet.len;
+    size_t sent = 0;
+    while (sent < len) {
+        ssize_t n = ::write(serial_fd_, data + sent, len - sent);
+        if (n > 0) { sent += n; continue; }
+        if (n < 0 && errno == EAGAIN) {
+            pollfd p{serial_fd_, POLLOUT, 0};
+            poll(&p, 1, 10);
+        }
+        return false;
+    }
+    return true;
 }
 
 int main(int argc, char * argv[]) {

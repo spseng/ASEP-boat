@@ -19,6 +19,7 @@
 #include <sys/ioctl.h>
 #include <poll.h>
 #include <cerrno>
+#include <mutex>
 
 
 class McuBridge : public rclcpp::Node {
@@ -28,7 +29,12 @@ private:
     wirelink::Link link_;
 
     std::string serial_port_;
-    int serial_fd_;
+    int serial_fd_ = -1;
+    std::mutex tx_mutex_;
+
+    void init_serial();
+
+    bool send_packet(wirelink::bytes::Packet& packet);
 
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr scalar_sub_;
@@ -49,8 +55,6 @@ private:
     void mode_callback(const msgs::msg::Mode::SharedPtr msg);
     void heart_beat_callback(const msgs::msg::HeartBeat::SharedPtr msg);
     void motor_pwm_callback(const msgs::msg::MotorPwm::SharedPtr msg);
-
-    void init_serial();
 };
 
 std::optional<speed_t> to_speed(int baud) {
