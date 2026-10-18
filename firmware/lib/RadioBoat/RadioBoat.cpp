@@ -106,7 +106,10 @@ void Radio::transmit() {
         status.self.scalar = 0.0; // TODO: Implement
     }
     status.heading_deg = 0.0; // TODO: Implement
-    status.state = 0; // TODO: Implement
+    status.state = wirelink::msg::lora::make_state(
+    static_cast<uint8_t>(boat::mode::Mode::MANUAL),
+    static_cast<uint8_t>(boat::mode::ArmedState::ARMED),
+    static_cast<uint8_t>(boat::mode::GateState::ENABLED)); // TODO: Implement
     status.faults = 0; // TODO: Implement
     status.gs_rssi = 0.0; // TODO: Implement
     status.gs_snr = 0.0; // TODO: Implement
