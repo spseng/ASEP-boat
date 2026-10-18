@@ -25,6 +25,8 @@
 class McuBridge : public rclcpp::Node {
 public:
     McuBridge();
+
+    ~McuBridge() override;
 private:
     wirelink::Link link_;
 
