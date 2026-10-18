@@ -6,6 +6,8 @@
 class Helmsman : public rclcpp::Node {
 public:
     Helmsman() : Node("helmsman") {
+        RCLCPP_INFO(this->get_logger(), "Helmsman node has been started.");
+
         attitude_sub_ = this->create_subscription<geometry_msgs::msg::QuaternionStamped>(
             "state/attitude", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&Helmsman::attitude_callback, this, std::placeholders::_1));
         desired_vel_sub_ = this->create_subscription<geometry_msgs::msg::Vector3Stamped>(

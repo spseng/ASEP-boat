@@ -7,6 +7,17 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(boat_defs REQUIRED)
+find_package(wirelink REQUIRED)
+
+add_executable(mode_manager src/mode_manager.cpp)
+target_compile_features(mode_manager PUBLIC cxx_std_17)
+target_link_libraries(mode_manager PUBLIC rclcpp::rclcpp ${msgs_TARGETS} ${geometry_msgs_TARGETS} ${sensor_msgs_TARGETS} ${boat_defs_TARGETS} ${wirelink_TARGETS})
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)

@@ -10,16 +10,27 @@ find_package(ament_cmake REQUIRED)
 
 find_package(rclcpp REQUIRED)
 find_package(msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(boat_defs REQUIRED)
 
 add_executable(engineer src/engineer.cpp)
 target_compile_features(engineer PUBLIC cxx_std_17)
-target_link_libraries(engineer PUBLIC rclcpp::rclcpp ${msgs_TARGETS})
+target_link_libraries(engineer PUBLIC rclcpp::rclcpp ${sensor_msgs_TARGETS} ${geometry_msgs_TARGETS} ${msgs_TARGETS} ${boat_defs_TARGETS})
 
 install(TARGETS engineer DESTINATION lib/${PROJECT_NAME})
 
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+
+install(TARGETS engineer
+  DESTINATION lib/${PROJECT_NAME})
+
+target_include_directories(
+  engineer PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

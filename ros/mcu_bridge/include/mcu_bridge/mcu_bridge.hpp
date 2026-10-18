@@ -38,6 +38,9 @@ private:
 
     bool send_packet(wirelink::bytes::Packet& packet);
 
+    void on_rx_tick();
+    void dispatch(const wirelink::Frame& f);
+
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr scalar_sub_;
     rclcpp::Subscription<msgs::msg::Mode>::SharedPtr mode_sub_;
@@ -57,6 +60,12 @@ private:
     void mode_callback(const msgs::msg::Mode::SharedPtr msg);
     void heart_beat_callback(const msgs::msg::HeartBeat::SharedPtr msg);
     void motor_pwm_callback(const msgs::msg::MotorPwm::SharedPtr msg);
+
+    uint8_t odom_seq_ = 0;
+    uint8_t scalar_seq_ = 0;
+    uint8_t mode_seq_ = 0;
+    uint8_t heart_beat_seq_ = 0;
+    uint8_t motor_pwm_seq_ = 0;
 };
 
 std::optional<speed_t> to_speed(int baud) {

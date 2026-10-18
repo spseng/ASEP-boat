@@ -32,23 +32,41 @@ McuBridge::~McuBridge() {
 }
 
 void McuBridge::odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
-
+    return;
 }
 
 void McuBridge::scalar_callback(const std_msgs::msg::Float64::SharedPtr msg) {
-
+    return;
 }
 
 void McuBridge::mode_callback(const msgs::msg::Mode::SharedPtr msg) {
-
+    return;
 }
 
 void McuBridge::heart_beat_callback(const msgs::msg::HeartBeat::SharedPtr msg) {
-
+    return;
 }
 
 void McuBridge::motor_pwm_callback(const msgs::msg::MotorPwm::SharedPtr msg) {
-
+    wirelink::msg::serial::MotorCommand wirelink_msg;
+    wirelink_msg.pwm_port = msg->pwm_port;
+    wirelink_msg.pwm_starboard = msg->pwm_starboard;
+    wirelink::Frame frame;
+    if (!wirelink::codec::pack(wirelink_msg, frame)) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to pack MotorCommand message");
+        return;
+    }
+    auto packet = wirelink::framing::wrap(frame, motor_pwm_seq_);
+    if (!packet) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to wrap MotorCommand frame");
+        return;
+    }
+    if (!send_packet(*packet)) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to send MotorCommand packet");
+        return;
+    }
+    motor_pwm_seq_++;
+    return;
 }
 
 void McuBridge::init_serial() {
@@ -85,6 +103,42 @@ bool McuBridge::send_packet(wirelink::bytes::Packet& packet) {
         return false;
     }
     return true;
+}
+
+void McuBridge::on_rx_tick() {
+    uint8_t buf[256];
+    ssize_t n;
+    while ((n = ::read(serial_fd_, buf, sizeof(buf))) > 0) {
+        for (ssize_t i = 0; i < n; ++i) {
+            auto frame = link_.feed(buf[i]);
+            if (frame) {
+                dispatch(*frame);
+            }
+        }
+    }
+}
+
+void McuBridge::dispatch(const wirelink::Frame& f) {
+    switch (static_cast<wirelink::msg::serial::MsgType>(f.type)) {
+        case wirelink::msg::serial::MsgType::Attitude: {} break;
+        case wirelink::msg::serial::MsgType::GPS: {} break;
+        case wirelink::msg::serial::MsgType::PeerTable: {}; break;
+        case wirelink::msg::serial::MsgType::OwnScalar: {}; break;
+        case wirelink::msg::serial::MsgType::ReceivedCommand: {
+            wirelink::msg::serial::ReceivedCommand wirelink_msg;
+            if (!wirelink::codec::unpack(f, wirelink_msg)) {
+                RCLCPP_ERROR(this->get_logger(), "Failed to unpack ReceivedCommand message");
+                return;
+            }
+            msgs::msg::CommandFrame msg;
+            msg.header.stamp = this->now();
+            msg.type = wirelink_msg.lora_type;
+            msg.payload.assign(wirelink_msg.payload.data.begin(), wirelink_msg.payload.data.begin() + wirelink_msg.payload.len);
+            command_frame_pub_->publish(msg);
+        }; break;
+        case wirelink::msg::serial::MsgType::Status: {}; break;
+    }
+    return;
 }
 
 int main(int argc, char * argv[]) {
