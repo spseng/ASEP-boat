@@ -34,7 +34,7 @@ void Radio::update() {
             tx_flag = false;
             sx1262.finishTransmit();
             sx1262.startReceive();
-            last_receive_us = micros();
+            last_receive_us = my_next_transmit_us;
             last_receive_tx_id = my_tx_id;
             schedule_next_transmit();
         }else {

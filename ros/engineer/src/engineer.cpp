@@ -49,7 +49,7 @@ void Engineer::update_control() {
     first_ = false;
 
     double linear_acc = target_v_ * 7.8; // TODO: ONLY USE THIS WHILE TESTING MANUALLY
-    double angular_acc = angular_pid_.update(target_w_ - current_w_, dt);
+    double angular_acc = target_w_ * 6.5; // TODO: ONLY USE THIS WHILE TESTING MANUALLY
 
     double port_force = get_port_force(linear_acc, angular_acc);
     double starboard_force = get_starboard_force(linear_acc, angular_acc);

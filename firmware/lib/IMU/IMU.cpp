@@ -10,6 +10,10 @@ IMU::IMU(PiLink& piLink) : piLink(piLink), bno(55, config::imu::I2C_ADDRESS, &Wi
 }
 
 void IMU::begin() {
+    pinMode(pins::VEXT, OUTPUT);
+    digitalWrite(pins::VEXT, LOW);
+    delay(1000);
+
     Wire.begin(pins::IMU_SDA, pins::IMU_SCL, config::imu::I2C_SPEED_HZ);
     bno.begin(OPERATION_MODE_NDOF);
     bno.setExtCrystalUse(true);
@@ -23,7 +27,7 @@ void IMU::update() {
     sensors_event_t ev;
     bno.getEvent(&ev); // absolute orientation, degrees
     imu::Quaternion q = bno.getQuat();
-    imu::Vector<3> g = bno.getVector(Adafruit_BNO055::VECTOR_GRAVITY);
+    imu::Vector<3> g = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
     imu::Vector<3> a = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
     uint8_t cSys, cGyro, cAccel, cMag;
     bno.getCalibration(&cSys, &cGyro, &cAccel, &cMag);
@@ -44,7 +48,7 @@ void IMU::update() {
     msg.calib_status = (cSys << 6) | (cGyro << 4) | (cAccel << 2) | cMag;
 
     wirelink::Frame frame;
-    if (!wirelink::codec::pack(msg, frame)) {
+    if (wirelink::codec::pack(msg, frame)) {
         piLink.send(frame);
     }
 }
