@@ -19,7 +19,7 @@ public:
 
         mode_pub_ = this->create_publisher<msgs::msg::Mode>("mode", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
         heart_beat_pub_ = this->create_publisher<msgs::msg::HeartBeat>("heart_beat", rclcpp::QoS(rclcpp::KeepLast(10)).best_effort());
-        cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>("cmd_vel", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
+        cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>("cmd/vel", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     }
 
 
@@ -45,14 +45,11 @@ private:
         wirelink::bytes::Payload payload;
         std::copy(msg->payload.begin(), msg->payload.end(), payload.data.begin());
         payload.len = msg->payload.size();
-        wirelink::Frame frame;
-        frame.type = static_cast<uint8_t>(wirelink::msg::lora::MsgType::Command);
-        frame.payload = payload;
 
         switch (static_cast<wirelink::msg::lora::MsgType>(msg->type)) { // BAD!!!! THIS NEEDS TO BE FIXED WHEN AUTONOMOUS IS IMPLEMENTED
             case wirelink::msg::lora::MsgType::Command: {
                 wirelink::msg::lora::Command wirelink_msg;
-                if (!wirelink::codec::unpack(frame, wirelink_msg)) {
+                if (!wirelink::codec::unpack_bytes(msg->payload.data(), msg->payload.size(), wirelink_msg)) {
                     RCLCPP_ERROR(this->get_logger(), "Failed to unpack Command message");
                     return;
                 }

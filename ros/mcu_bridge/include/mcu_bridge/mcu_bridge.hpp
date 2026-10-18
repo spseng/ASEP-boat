@@ -66,6 +66,8 @@ private:
     uint8_t mode_seq_ = 0;
     uint8_t heart_beat_seq_ = 0;
     uint8_t motor_pwm_seq_ = 0;
+
+    rclcpp::TimerBase::SharedPtr rx_timer_;
 };
 
 std::optional<speed_t> to_speed(int baud) {

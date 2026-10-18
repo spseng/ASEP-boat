@@ -1,0 +1,13 @@
+<launch>
+  <arg name="boat_id" default="$(env BOAT_ID 1)"/>
+
+  <node pkg="mcu_bridge" exec="mcu_bridge" name="mcu_bridge" output="screen">
+    <param from="$(find-pkg-share bringup)/config/boat.yaml"/>
+  </node>
+
+  <node pkg="mode_manager" exec="mode_manager" name="mode_manager" output="screen">
+    <param name="my_id" value="$(var boat_id)"/>
+  </node>
+
+  <node pkg="engineer" exec="engineer" name="engineer" output="screen"/>
+</launch>

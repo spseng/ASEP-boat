@@ -19,12 +19,14 @@ McuBridge::McuBridge() : Node("mcu_bridge") {
         "cmd/motor_pwm", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&McuBridge::motor_pwm_callback, this, std::placeholders::_1));
 
     imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>("imu/data", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
-    command_frame_pub_ = this->create_publisher<msgs::msg::CommandFrame>("mcu/command_frame", rclcpp::QoS(rclcpp::KeepLast(10)).best_effort());
-    mcu_status_pub_ = this->create_publisher<msgs::msg::McuStatus>("mcu/status", rclcpp::QoS(rclcpp::KeepLast(5)).best_effort());
+    command_frame_pub_ = this->create_publisher<msgs::msg::CommandFrame>("mcu/command_frame", rclcpp::QoS(rclcpp::KeepLast(10)).reliable());
+    mcu_status_pub_ = this->create_publisher<msgs::msg::McuStatus>("mcu/status", rclcpp::QoS(rclcpp::KeepLast(5)).reliable());
     peer_table_pub_ = this->create_publisher<msgs::msg::PeerTable>("mcu/peer_table", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     gps_fix_pub_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("gps/fix", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     gps_vel_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>("gps/vel", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     raw_scalar_pub_ = this->create_publisher<std_msgs::msg::Float64>("raw_scalar", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
+
+    rx_timer_ = this->create_wall_timer(std::chrono::milliseconds(5), std::bind(&McuBridge::on_rx_tick, this));
 }
 
 McuBridge::~McuBridge() {
@@ -120,7 +122,26 @@ void McuBridge::on_rx_tick() {
 
 void McuBridge::dispatch(const wirelink::Frame& f) {
     switch (static_cast<wirelink::msg::serial::MsgType>(f.type)) {
-        case wirelink::msg::serial::MsgType::Attitude: {} break;
+        case wirelink::msg::serial::MsgType::Attitude: {
+            wirelink::msg::serial::Attitude wirelink_msg;
+            if (!wirelink::codec::unpack(f, wirelink_msg)) {
+                RCLCPP_ERROR(this->get_logger(), "Failed to unpack Attitude message");
+                return;
+            }
+            sensor_msgs::msg::Imu msg;
+            msg.header.stamp = this->now();
+            msg.orientation.w = wirelink_msg.quat_w;
+            msg.orientation.x = wirelink_msg.quat_x;
+            msg.orientation.y = wirelink_msg.quat_y;
+            msg.orientation.z = wirelink_msg.quat_z;
+            msg.angular_velocity.x = wirelink_msg.ang_vel_x;
+            msg.angular_velocity.y = wirelink_msg.ang_vel_y;
+            msg.angular_velocity.z = wirelink_msg.ang_vel_z;
+            msg.linear_acceleration.x = wirelink_msg.lin_acc_x;
+            msg.linear_acceleration.y = wirelink_msg.lin_acc_y;
+            msg.linear_acceleration.z = wirelink_msg.lin_acc_z;
+            imu_pub_->publish(msg);
+        } break;
         case wirelink::msg::serial::MsgType::GPS: {} break;
         case wirelink::msg::serial::MsgType::PeerTable: {}; break;
         case wirelink::msg::serial::MsgType::OwnScalar: {}; break;
