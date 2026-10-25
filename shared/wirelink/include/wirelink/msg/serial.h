@@ -136,6 +136,6 @@ namespace wirelink::msg::serial {
         uint8_t ros_armed;
 
         template <class F>
-        void fields (F& f) { f(ros_mode); }
+        void fields (F& f) { f(ros_mode); f(ros_armed); }
     };
 }
