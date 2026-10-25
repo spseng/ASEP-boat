@@ -6,25 +6,39 @@
 #include <MotorController.h>
 #include <IMU.h>
 #include <RadioBoat.h>
+#include <ModeManager.h>
+#include <Every.h>
 
 PiLink piLink = PiLink();
+ModeManager modeManager = ModeManager(piLink);
 
-MotorController motorController = MotorController(piLink);
-Radio radio = Radio(piLink);
 IMU bno = IMU(piLink);
 
-constexpr uint8_t MY_BOAT_ID = 1; // TMP
+Radio radio = Radio(piLink, modeManager);
+MotorController motorController = MotorController(piLink, modeManager);
+
+Every imu_every = Every(20); // 50Hz
+Every status_every = Every(1000); // 1Hz
 
 void setup() {
     piLink.begin();
     motorController.begin();
-    radio.begin(MY_BOAT_ID);
     bno.begin();
+
+    while (true) {
+        piLink.update();
+        modeManager.update();
+        if (modeManager.is_initialized()) { break; }
+        delay(1);
+    }
+    radio.begin(modeManager.get_boat_id());
 }
 
 void loop() {
     piLink.update();
     motorController.update();
     radio.update();
-    bno.update();
+    if (imu_every()) bno.update();
+    modeManager.update();
+    if (status_every()) modeManager.send_status(radio);
 }

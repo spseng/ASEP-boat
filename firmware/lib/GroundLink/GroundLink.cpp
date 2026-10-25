@@ -15,7 +15,7 @@ bool GroundLink::update() {
         auto frame = link.feed(b);
         if (frame) {
             auto packet = wirelink::framing::wrap(*frame, 0);
-            //if (!packet) { return false; }
+            if (!packet) { return false; }
             last_received_packet = *packet;
             has_received_packet = true;
         }

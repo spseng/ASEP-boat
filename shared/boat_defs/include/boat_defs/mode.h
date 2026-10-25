@@ -27,5 +27,6 @@ namespace boat::mode {
         constexpr uint8_t MOTOR_FAILURE         = 1 << 2;
         constexpr uint8_t BATTERY_LOW           = 1 << 3;
         constexpr uint8_t SENSOR_FAILURE        = 1 << 4;
+        constexpr uint8_t ID_CONFLICT            = 1 << 5;
     }
 }

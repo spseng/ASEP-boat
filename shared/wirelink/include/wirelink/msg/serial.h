@@ -124,22 +124,16 @@ namespace wirelink::msg::serial {
     struct Config {
         constexpr static MsgType TYPE = MsgType::Config;
         uint8_t boat_id;
-        uint8_t tdma_slot;
-        uint8_t lora_sf;
-        uint32_t lora_bw_hz;
-        uint32_t lora_freq_hz;
-        uint16_t pwm_min;
-        uint16_t pwm_neutral;
-        uint16_t pwm_max;
-        uint8_t output_enable;
+        uint8_t gate_enable;
 
         template <class F>
-        void fields (F& f) { f(boat_id); f(tdma_slot); f(lora_sf); f(lora_bw_hz); f(lora_freq_hz); f(pwm_min); f(pwm_neutral); f(pwm_max); f(output_enable); }
-    };
+            void fields (F& f) { f(boat_id); f(gate_enable); }
+        };
 
     struct Heartbeat {
         constexpr static MsgType TYPE = MsgType::Heartbeat;
         uint8_t ros_mode;
+        uint8_t ros_armed;
 
         template <class F>
         void fields (F& f) { f(ros_mode); }

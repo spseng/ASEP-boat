@@ -1,17 +1,18 @@
 #pragma once
 
 #include <PiLink.h>
+#include <ModeManager.h>
 #include "driver/mcpwm_prelude.h"
 
 class MotorController {
 public:
-    MotorController(PiLink& piLink);
+    MotorController(PiLink& piLink, ModeManager& modeManager);
 
     void begin();
     void update();
 private:
     PiLink& piLink;
-    
+    ModeManager& modeManager;
     static inline mcpwm_timer_handle_t s_timer = nullptr;
     static inline mcpwm_cmpr_handle_t s_cmprPort = nullptr;
     static inline mcpwm_cmpr_handle_t s_cmprStbd = nullptr;

@@ -41,14 +41,14 @@ namespace wirelink::msg::lora {
         constexpr static MsgType TYPE = MsgType::SelfStatus;
 
         wirelink::msg::common::PeerEntry self;
-        float heading_deg; // degrees true, 0~360
+
         uint8_t state; // 0~3: mode; 4: armed; 5: gate (1=enabled); 6,7: reserved
         uint8_t faults;
         float gs_rssi;
         float gs_snr;
 
         template <class F>
-        void fields (F& f) { f(self); f(heading_deg); f(state); f(faults); f(gs_rssi); f(gs_snr); }
+        void fields (F& f) { f(self); f(state); f(faults); f(gs_rssi); f(gs_snr); }
     };
 
     struct Command {

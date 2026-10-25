@@ -6,7 +6,7 @@
 #include "config.h"
 #include "pins.h"
 
-MotorController::MotorController(PiLink& piLink) : piLink(piLink) {}
+MotorController::MotorController(PiLink& piLink, ModeManager& modeManager) : piLink(piLink), modeManager(modeManager) {}
 
 void MotorController::begin() {
     pwm_begin();
@@ -67,6 +67,10 @@ bool MotorController::pwm_begin() {
 }
 
 void MotorController::pwm_write(uint16_t port, uint16_t stbd) {
+    if (modeManager.get_gate_state() != boat::mode::GateState::ENABLED) {
+        port = boat::esc::PWM_NEUTRAL_US;
+        stbd = boat::esc::PWM_NEUTRAL_US;
+    }
     mcpwm_comparator_set_compare_value(s_cmprPort, port);
     mcpwm_comparator_set_compare_value(s_cmprStbd, stbd);
 }
