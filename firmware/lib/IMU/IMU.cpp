@@ -21,11 +21,10 @@ void IMU::begin() {
 
 void IMU::update() {
     if (!ok_) return;
-    if (millis() - last_ms < 20) return;
-    last_ms = millis();
 
     sensors_event_t ev;
     bno.getEvent(&ev); // absolute orientation, degrees
+
     imu::Quaternion q = bno.getQuat();
     imu::Vector<3> g = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
     imu::Vector<3> a = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);

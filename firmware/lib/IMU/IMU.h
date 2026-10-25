@@ -16,5 +16,4 @@ private:
     Adafruit_BNO055 bno;
 
     bool ok_ = true;
-    unsigned long last_ms = 0;
 };
