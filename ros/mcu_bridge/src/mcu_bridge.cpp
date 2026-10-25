@@ -13,10 +13,10 @@ McuBridge::McuBridge() : Node("mcu_bridge") {
         "scalar", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&McuBridge::scalar_callback, this, std::placeholders::_1));
     mode_sub_ = this->create_subscription<msgs::msg::Mode>(
         "mode", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(), std::bind(&McuBridge::mode_callback, this, std::placeholders::_1));
-    heart_beat_sub_ = this->create_subscription<msgs::msg::HeartBeat>(
-        "heart_beat", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&McuBridge::heart_beat_callback, this, std::placeholders::_1));
     motor_pwm_sub_ = this->create_subscription<msgs::msg::MotorPwm>(
         "cmd/motor_pwm", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&McuBridge::motor_pwm_callback, this, std::placeholders::_1));
+    config_sub_ = this->create_subscription<msgs::msg::Config>(
+        "config", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(), std::bind(&McuBridge::config_callback, this, std::placeholders::_1));
 
     imu_pub_ = this->create_publisher<sensor_msgs::msg::Imu>("imu/data", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     command_frame_pub_ = this->create_publisher<msgs::msg::CommandFrame>("mcu/command_frame", rclcpp::QoS(rclcpp::KeepLast(10)).reliable());
@@ -42,11 +42,47 @@ void McuBridge::scalar_callback(const std_msgs::msg::Float64::SharedPtr msg) {
 }
 
 void McuBridge::mode_callback(const msgs::msg::Mode::SharedPtr msg) {
-    return;
+    wirelink::msg::serial::Heartbeat wirelink_msg;
+    wirelink_msg.ros_mode = msg->mode;
+    wirelink_msg.ros_armed = msg->armed;
+
+    wirelink::Frame frame;
+    if (!wirelink::codec::pack(wirelink_msg, frame)) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to pack Heartbeat message");
+        return;
+    }
+    auto packet = wirelink::framing::wrap(frame, mode_seq_);
+    if (!packet) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to wrap Heartbeat frame");
+        return;
+    }
+    if (!send_packet(*packet)) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to send Heartbeat packet");
+        return;
+    }
+    mode_seq_++;
 }
 
-void McuBridge::heart_beat_callback(const msgs::msg::HeartBeat::SharedPtr msg) {
-    return;
+void McuBridge::config_callback(const msgs::msg::Config::SharedPtr msg) {
+    wirelink::msg::serial::Config wirelink_msg;
+    wirelink_msg.boat_id = msg->boat_id;
+    wirelink_msg.gate_enable = msg->gate_enable;
+
+    wirelink::Frame frame;
+    if (!wirelink::codec::pack(wirelink_msg, frame)) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to pack Config message");
+        return;
+    }
+    auto packet = wirelink::framing::wrap(frame, config_seq_);
+    if (!packet) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to wrap Config frame");
+        return;
+    }
+    if (!send_packet(*packet)) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to send Config packet");
+        return;
+    }
+    config_seq_++;
 }
 
 void McuBridge::motor_pwm_callback(const msgs::msg::MotorPwm::SharedPtr msg) {
@@ -101,6 +137,7 @@ bool McuBridge::send_packet(wirelink::bytes::Packet& packet) {
         if (n < 0 && errno == EAGAIN) {
             pollfd p{serial_fd_, POLLOUT, 0};
             poll(&p, 1, 10);
+            continue;
         }
         return false;
     }
@@ -142,9 +179,26 @@ void McuBridge::dispatch(const wirelink::Frame& f) {
             msg.linear_acceleration.z = wirelink_msg.lin_acc_z;
             imu_pub_->publish(msg);
         } break;
-        case wirelink::msg::serial::MsgType::GPS: {} break;
-        case wirelink::msg::serial::MsgType::PeerTable: {}; break;
-        case wirelink::msg::serial::MsgType::OwnScalar: {}; break;
+        case wirelink::msg::serial::MsgType::GPS: {} break; // gps yet to be implemented
+        case wirelink::msg::serial::MsgType::PeerTable: {
+            wirelink::msg::serial::PeerTable wirelink_msg;
+            if (!wirelink::codec::unpack(f, wirelink_msg)) {
+                RCLCPP_ERROR(this->get_logger(), "Failed to unpack PeerTable message");
+                return;
+            }
+            msgs::msg::PeerTable msg;
+            msg.header.stamp = this->now();
+            for (size_t i = 0; i < wirelink_msg.peer_entries.count; ++i) {
+                const auto& entry = wirelink_msg.peer_entries.items[i];
+                msgs::msg::Peer peer_entry;
+                peer_entry.lat = static_cast<double>(entry.lat) / 1e7;
+                peer_entry.lon = static_cast<double>(entry.lon) / 1e7;
+
+                msg.peers.push_back(peer_entry);
+            }
+            peer_table_pub_->publish(msg);
+        }; break;
+        case wirelink::msg::serial::MsgType::OwnScalar: {}; break; // temprature probe yet to be implemented
         case wirelink::msg::serial::MsgType::ReceivedCommand: {
             wirelink::msg::serial::ReceivedCommand wirelink_msg;
             if (!wirelink::codec::unpack(f, wirelink_msg)) {

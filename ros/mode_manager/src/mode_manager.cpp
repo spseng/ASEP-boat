@@ -5,6 +5,7 @@
 #include "msgs/msg/mcu_status.hpp"
 #include "msgs/msg/mode.hpp"
 #include "msgs/msg/heart_beat.hpp"
+#include "msgs/msg/config.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 
 class ModeManager : public rclcpp::Node {
@@ -20,9 +21,13 @@ public:
         mode_pub_ = this->create_publisher<msgs::msg::Mode>("mode", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
         heart_beat_pub_ = this->create_publisher<msgs::msg::HeartBeat>("heart_beat", rclcpp::QoS(rclcpp::KeepLast(10)).best_effort());
         cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>("cmd/vel", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
+        config_pub_ = this->create_publisher<msgs::msg::Config>("config", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
+
+        pub_timer_ = this->create_wall_timer(std::chrono::milliseconds(100), [this]() {
+            publish_mode();
+            publish_config();
+        });
     }
-
-
 
 private:
     uint8_t my_id_;
@@ -30,12 +35,17 @@ private:
     boat::mode::Mode current_mode_ = boat::mode::Mode::MANUAL;
     boat::mode::ArmedState armed_state_ = boat::mode::ArmedState::DISARMED;
 
+    bool gate_reenable_requested_ = false;
+
     rclcpp::Subscription<msgs::msg::CommandFrame>::SharedPtr command_frame_sub_;
     rclcpp::Subscription<msgs::msg::McuStatus>::SharedPtr mcu_status_sub_;
 
     rclcpp::Publisher<msgs::msg::Mode>::SharedPtr mode_pub_;
     rclcpp::Publisher<msgs::msg::HeartBeat>::SharedPtr heart_beat_pub_;
     rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr cmd_vel_pub_;
+    rclcpp::Publisher<msgs::msg::Config>::SharedPtr config_pub_;
+
+    rclcpp::TimerBase::SharedPtr pub_timer_;
 
     void command_frame_callback(const msgs::msg::CommandFrame::SharedPtr msg) {
         if (msg->payload.size() > wirelink::msg::lora::MAX_LORA_PAYLOAD) {
@@ -61,11 +71,53 @@ private:
                     cmd_vel_pub_->publish(cmd_vel_msg);
                 }
             } break;
+            case wirelink::msg::lora::MsgType::Heartbeat: {} break;
+            case wirelink::msg::lora::MsgType::Reenable: {
+                wirelink::msg::lora::Reenable wirelink_msg;
+                if (!wirelink::codec::unpack_bytes(msg->payload.data(), msg->payload.size(), wirelink_msg)) {
+                    RCLCPP_ERROR(this->get_logger(), "Failed to unpack Reenable message");
+                    return;
+                }
+                if (wirelink_msg.rx_id != my_id_ && wirelink_msg.rx_id != boat::ids::BROADCAST_ID) {
+                    RCLCPP_DEBUG(this->get_logger(), "Received Reenable message for a different boat ID: %d", wirelink_msg.rx_id);
+                    return;
+                }
+                gate_reenable_requested_ = true;
+            } break;
+            case wirelink::msg::lora::MsgType::SetMode: {
+                wirelink::msg::lora::SetMode wirelink_msg;
+                if (!wirelink::codec::unpack_bytes(msg->payload.data(), msg->payload.size(), wirelink_msg)) {
+                    RCLCPP_ERROR(this->get_logger(), "Failed to unpack SetMode message");
+                    return;
+                }
+                if (wirelink_msg.rx_id != my_id_ && wirelink_msg.rx_id != boat::ids::BROADCAST_ID) {
+                    RCLCPP_DEBUG(this->get_logger(), "Received SetMode message for a different boat ID: %d", wirelink_msg.rx_id);
+                    return;
+                }
+                current_mode_ = static_cast<boat::mode::Mode>(wirelink_msg.mode);
+                armed_state_ = static_cast<boat::mode::ArmedState>(wirelink_msg.armed);
+            } break;
         }
     }
     void mcu_status_callback(const msgs::msg::McuStatus::SharedPtr msg) {
         // Handle incoming MCU status messages
         RCLCPP_INFO(this->get_logger(), "Received McuStatus message");
+    }
+
+    void publish_config() {
+        msgs::msg::Config config_msg;
+        config_msg.boat_id = my_id_;
+        config_msg.gate_enable = gate_reenable_requested_;
+        gate_reenable_requested_ = false;
+        config_pub_->publish(config_msg);
+    }
+
+    void publish_mode() {
+        msgs::msg::Mode mode_msg;
+        mode_msg.header.stamp = this->now();
+        mode_msg.mode = static_cast<uint8_t>(current_mode_);
+        mode_msg.armed = static_cast<uint8_t>(armed_state_);
+        mode_pub_->publish(mode_msg);
     }
 };
 

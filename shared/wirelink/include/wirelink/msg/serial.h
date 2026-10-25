@@ -127,8 +127,8 @@ namespace wirelink::msg::serial {
         uint8_t gate_enable;
 
         template <class F>
-            void fields (F& f) { f(boat_id); f(gate_enable); }
-        };
+        void fields (F& f) { f(boat_id); f(gate_enable); }
+    };
 
     struct Heartbeat {
         constexpr static MsgType TYPE = MsgType::Heartbeat;
