@@ -5,7 +5,6 @@
 
 #include <Wire.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 #include <TinyGPS++.h>
 
 class GPS {
@@ -22,7 +21,7 @@ private:
     HardwareSerial GpsSerial;
     TinyGPSPlus gps;
 
-    TinyGPSCustom ggaFixQ ;
+    TinyGPSCustom ggaFixQ;
     TinyGPSCustom ggaTime;
     TinyGPSCustom ackCmd;
     TinyGPSCustom ackFlag;
