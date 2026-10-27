@@ -23,13 +23,13 @@ void GPS::update() {
     while (GpsSerial.available()) {
         gps.encode(GpsSerial.read());
 
-        if (gps.sattellites.isUpdated()) {
+        if (gps.satellites.isUpdated()) {
             wirelink::msg::serial::GPS msg;
 
             msg.lat = toE7(gps.location.rawLat());
             msg.lon = toE7(gps.location.rawLng());
             msg.utc_time_ms = 0; // tmp.
-            msg.fix_quality = gps.locatoin.FixQuality();
+            msg.fix_quality = gps.location.FixQuality();
             msg.satellites = gps.satellites.value();
             msg.hdop = gps.hdop.hdop();
             msg.speed_over_ground = gps.speed.mps();
