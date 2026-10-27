@@ -25,6 +25,7 @@ McuBridge::McuBridge() : Node("mcu_bridge") {
     gps_fix_pub_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("gps/fix", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     gps_vel_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>("gps/vel", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     raw_scalar_pub_ = this->create_publisher<std_msgs::msg::Float64>("raw_scalar", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
+    imu_calib_pub_ = this->create_publisher<std_msgs::msg::UInt8>("imu/calib_status", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
 
     rx_timer_ = this->create_wall_timer(std::chrono::milliseconds(5), std::bind(&McuBridge::on_rx_tick, this));
 }
@@ -187,6 +188,10 @@ void McuBridge::dispatch(const wirelink::Frame& f) {
             msg.linear_acceleration.y = wirelink_msg.lin_acc_y;
             msg.linear_acceleration.z = wirelink_msg.lin_acc_z;
             imu_pub_->publish(msg);
+
+            std_msgs::msg::UInt8 calib_msg;
+            calib_msg.data = wirelink_msg.calib_status;
+            imu_calib_pub_->publish(calib_msg);
         } break;
         case wirelink::msg::serial::MsgType::GPS: {
             wirelink::msg::serial::GPS wirelink_msg;

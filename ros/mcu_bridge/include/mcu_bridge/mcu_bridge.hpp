@@ -2,6 +2,7 @@
 #include <wirelink/wirelink.h>
 #include <boat_defs/boat_defs.h>
 #include "std_msgs/msg/float64.hpp"
+#include "std_msgs/msg/u_int8.hpp"
 #include "msgs/msg/mode.hpp"
 #include "msgs/msg/motor_pwm.hpp"
 #include "msgs/msg/heart_beat.hpp"
@@ -61,6 +62,7 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr gps_fix_pub_;
     rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr gps_vel_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr raw_scalar_pub_;
+    rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr imu_calib_pub_;
 
     void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg);
     void scalar_callback(const std_msgs::msg::Float64::SharedPtr msg);
