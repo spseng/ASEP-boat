@@ -167,10 +167,19 @@ void McuBridge::dispatch(const wirelink::Frame& f) {
             }
             sensor_msgs::msg::Imu msg;
             msg.header.stamp = this->now();
-            msg.orientation.w = wirelink_msg.quat_w;
-            msg.orientation.x = wirelink_msg.quat_x;
-            msg.orientation.y = wirelink_msg.quat_y;
-            msg.orientation.z = wirelink_msg.quat_z;
+            msg.header.frame_id = "base_link";
+
+            msg.orientation_covariance[0] = msg.orientation_covariance[4] = msg.orientation_covariance[8] = 0.0076;
+            msg.angular_velocity_covariance[0] = msg.angular_velocity_covariance[4] = msg.angular_velocity_covariance[8] = 1e-4;
+            msg.linear_acceleration_covariance[0] = -1;
+
+            const double c = yaw_rot_c_, s = yaw_rot_s_;
+            const double w = wirelink_msg.quat_w, x = wirelink_msg.quat_x, y = wirelink_msg.quat_y, z = wirelink_msg.quat_z;
+            msg.orientation.w = c * w - s * z;
+            msg.orientation.x = c * x - s * y;
+            msg.orientation.y = c * y + s * x;
+            msg.orientation.z = c * z + s * w;
+
             msg.angular_velocity.x = wirelink_msg.ang_vel_x;
             msg.angular_velocity.y = wirelink_msg.ang_vel_y;
             msg.angular_velocity.z = wirelink_msg.ang_vel_z;
@@ -179,7 +188,36 @@ void McuBridge::dispatch(const wirelink::Frame& f) {
             msg.linear_acceleration.z = wirelink_msg.lin_acc_z;
             imu_pub_->publish(msg);
         } break;
-        case wirelink::msg::serial::MsgType::GPS: {} break; // gps yet to be implemented
+        case wirelink::msg::serial::MsgType::GPS: {
+            wirelink::msg::serial::GPS wirelink_msg;
+            if (!wirelink::codec::unpack(f, wirelink_msg)) {
+                RCLCPP_ERROR(this->get_logger(), "Failed to unpack GPS message");
+                return;
+            }
+            sensor_msgs::msg::NavSatFix fix_msg;
+            fix_msg.header.stamp = this->now();
+            fix_msg.header.frame_id = "base_link";
+            fix_msg.latitude = static_cast<double>(wirelink_msg.lat) / 1e7;
+            fix_msg.longitude = static_cast<double>(wirelink_msg.lon) / 1e7;
+            fix_msg.status.status = wirelink_msg.fix_quality == 0 ? sensor_msgs::msg::NavSatStatus::STATUS_NO_FIX : sensor_msgs::msg::NavSatStatus::STATUS_FIX;
+            fix_msg.status.service = 1; // GPS
+
+            constexpr double UERE_M = 4.0;
+            const double sigma = wirelink_msg.hdop * UERE_M;
+            const double var = sigma * sigma;
+            fix_msg.position_covariance = {var, 0.0, 0.0,
+                                            0.0, var, 0.0,
+                                            0.0, 0.0, 4.0 * var};
+            fix_msg.position_covariance_type = sensor_msgs::msg::NavSatFix::COVARIANCE_TYPE_APPROXIMATED;
+            gps_fix_pub_->publish(fix_msg);
+
+            geometry_msgs::msg::TwistStamped vel_msg;
+            vel_msg.header.stamp = this->now();
+            const double cog = wirelink_msg.course_over_ground * M_PI / 180.0;
+            vel_msg.twist.linear.x = wirelink_msg.speed_over_ground * std::sin(cog); 
+            vel_msg.twist.linear.y = wirelink_msg.speed_over_ground * std::cos(cog);
+            gps_vel_pub_->publish(vel_msg);
+        } break;
         case wirelink::msg::serial::MsgType::PeerTable: {
             wirelink::msg::serial::PeerTable wirelink_msg;
             if (!wirelink::codec::unpack(f, wirelink_msg)) {

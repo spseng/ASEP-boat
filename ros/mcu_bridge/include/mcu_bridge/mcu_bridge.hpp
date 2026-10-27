@@ -42,6 +42,12 @@ private:
     void on_rx_tick();
     void dispatch(const wirelink::Frame& f);
 
+    const double yaw_offset_deg = this->declare_parameter("imu_yaw_offset_deg", 0.0);
+    const double declination_deg = this->declare_parameter("magnetic_declination_deg", -14.0);
+    const double theta = (yaw_offset_deg - declination_deg) * M_PI / 180.0;
+    const double yaw_rot_c_ = std::cos(theta / 2.0);
+    const double yaw_rot_s_ = std::sin(theta / 2.0);
+
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr scalar_sub_;
     rclcpp::Subscription<msgs::msg::Mode>::SharedPtr mode_sub_;
