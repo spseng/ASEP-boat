@@ -26,4 +26,7 @@ namespace pins {
 
     constexpr uint8_t IMU_SDA = 41;
     constexpr uint8_t IMU_SCL = 42;
+
+    constexpr uint8_t GPS_RX = 4;
+    constexpr uint8_t GPS_TX = 2;
 }
