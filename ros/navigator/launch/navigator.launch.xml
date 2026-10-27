@@ -1,0 +1,12 @@
+<launch>
+  <node pkg="robot_localization" exec="ekf_node" name="ekf" output="screen">
+    <param from="$(find-pkg-share navigator)/config/ekf.yaml"/>
+    <remap from="odometry/filtered" to="state/odom"/>
+  </node>
+
+  <node pkg="robot_localization" exec="navsat_transform_node" name="navsat_transform" output="screen">
+    <param from="$(find-pkg-share navigator)/config/navsat.yaml"/>
+    <param from="$(find-pkg-share bringup)/config/cites/concord_nh.yaml"/>
+    <remap from="odometry/filtered" to="state/odom"/>
+  </node>
+</launch>

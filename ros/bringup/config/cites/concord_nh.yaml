@@ -1,0 +1,8 @@
+lookout:
+  ros__parameters:
+    origin_lat: 43.194761
+    origin_lon: -71.578504
+    
+navsat_transform:
+  ros__parameters:
+    datum: [43.194761, -71.578504, 0.0]
