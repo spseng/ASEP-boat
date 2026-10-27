@@ -8,10 +8,8 @@ static void gpsSend(HardwareSerial& serial, const char* body) {
 
 GPS::GPS(PiLink& piLink) : piLink(piLink),
     GpsSerial(1),
-    ggaFixQ(gps, "GPGGA", 6),
-    ggaTime(gps, "GPGGA", 1),
-    ackCmd(gps, "PMTK001", 1),
-    ackFlag(gps, "PMTK001", 2) {}
+    gpggaFixQ(gps, "GPGGA", 6),
+    gnggaFixQ(gps, "GNGGA", 6) {}
 
 void GPS::begin() {
     GpsSerial.begin(9600, SERIAL_8N1, pins::GPS_RX, pins::GPS_TX);
@@ -29,7 +27,10 @@ void GPS::update() {
             msg.lat = toE7(gps.location.rawLat());
             msg.lon = toE7(gps.location.rawLng());
             msg.utc_time_ms = 0; // tmp.
-            msg.fix_quality = gps.location.FixQuality();
+
+            const char* q = gpggaFixQ.isUpdated() ? gpggaFixQ.value() : gnggaFixQ.value();
+            msg.fix_quality = atoi(q);
+
             msg.satellites = gps.satellites.value();
             msg.hdop = gps.hdop.hdop();
             msg.speed_over_ground = gps.speed.mps();

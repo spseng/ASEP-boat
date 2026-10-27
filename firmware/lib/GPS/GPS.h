@@ -21,10 +21,8 @@ private:
     HardwareSerial GpsSerial;
     TinyGPSPlus gps;
 
-    TinyGPSCustom ggaFixQ;
-    TinyGPSCustom ggaTime;
-    TinyGPSCustom ackCmd;
-    TinyGPSCustom ackFlag;
+    TinyGPSCustom gpggaFixQ;
+    TinyGPSCustom gnggaFixQ;
 
     static int32_t toE7(const RawDegrees &r) {
         int32_t v = (int32_t)r.deg * 10000000L + (int32_t)(r.billionths / 100);
