@@ -13,10 +13,11 @@ find_package(ament_cmake REQUIRED)
 
 find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
 
 add_executable(helmsman src/helmsman.cpp)
 target_compile_features(helmsman PUBLIC cxx_std_17)
-target_link_libraries(helmsman PUBLIC rclcpp::rclcpp ${geometry_msgs_TARGETS})
+target_link_libraries(helmsman PUBLIC rclcpp::rclcpp ${geometry_msgs_TARGETS} ${nav_msgs_TARGETS})
 
 install (TARGETS helmsman
   DESTINATION lib/${PROJECT_NAME})

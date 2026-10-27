@@ -98,6 +98,8 @@ void Radio::receive() {
 
             update_link_status(last_receive_tx_id, sx1262.getRSSI(), sx1262.getSNR());
 
+            send_peer_table();
+
             may_transmit = true;
             schedule_next_transmit();
         }
@@ -180,4 +182,17 @@ void Radio::update_peer_map(const uint8_t id, const int32_t lat, const int32_t l
     peer_map[id].lon = lon;
     peer_map[id].scalar = scalar;
     peer_map[id].heading_deg = heading_deg;
+}
+
+void Radio::send_peer_table() {
+    wirelink::msg::serial::PeerTable table;
+    table.peer_entries.count = 0;
+    for (uint8_t id = boat::ids::BOAT_ID_MIN; id <= boat::ids::BOAT_ID_MAX; ++id) {
+        if (id == my_tx_id || !link_statuses_received[id]) continue;
+        const auto& p = peer_map[id];
+        if (p.lat == 0 && p.lon == 0) continue;
+        table.peer_entries.items[table.peer_entries.count++] = p;
+    }
+    wirelink::Frame frame;
+    if (wirelink::codec::pack(table, frame)) piLink.send(frame);
 }

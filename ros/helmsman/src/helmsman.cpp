@@ -1,25 +1,23 @@
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/vector3_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
-#include "geometry_msgs/msg/quaternion_stamped.hpp"
+#include "nav_msgs/msg/odometry.hpp"
 
 class Helmsman : public rclcpp::Node {
 public:
     Helmsman() : Node("helmsman") {
         RCLCPP_INFO(this->get_logger(), "Helmsman node has been started.");
 
-        attitude_sub_ = this->create_subscription<geometry_msgs::msg::QuaternionStamped>(
+        attitude_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
             "state/odom", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&Helmsman::attitude_callback, this, std::placeholders::_1));
         desired_vel_sub_ = this->create_subscription<geometry_msgs::msg::Vector3Stamped>(
             "cmd/desired_vel", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&Helmsman::desired_vel_callback, this, std::placeholders::_1));
         cmd_vel_auto_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>("cmd/vel_auto", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     }
 private:
-    rclcpp::Subscription<geometry_msgs::msg::QuaternionStamped>::SharedPtr attitude_sub_;
+    rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr attitude_sub_;
     rclcpp::Subscription<geometry_msgs::msg::Vector3Stamped>::SharedPtr desired_vel_sub_;
     rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr cmd_vel_auto_pub_;
-
-    geometry_msgs::msg::QuaternionStamped current_attitude_;
 
     double current_yaw_ = 0.0;
     const double linear_threshold_deg_ = 10.0; // Threshold angle in degrees for
@@ -46,9 +44,8 @@ private:
         return cmd_vel;
     };
 
-    void attitude_callback(const geometry_msgs::msg::QuaternionStamped::SharedPtr msg) {
-        current_attitude_ = *msg;
-        const auto& q = current_attitude_.quaternion;
+    void attitude_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
+        const auto& q = msg->pose.pose.orientation;
         current_yaw_ = std::atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
     }
 

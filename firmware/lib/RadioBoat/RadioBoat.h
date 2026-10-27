@@ -51,4 +51,6 @@ private:
     std::array<wirelink::msg::common::PeerEntry, boat::ids::NUM_IDS> peer_map; // refer to link_statuses for validity and age of entries
 
     void update_peer_map(const uint8_t id, const int32_t lat, const int32_t lon, const float scalar, const float heading_deg);
+
+    void send_peer_table();
 };
