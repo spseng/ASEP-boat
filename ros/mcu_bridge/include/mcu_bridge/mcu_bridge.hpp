@@ -14,6 +14,7 @@
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "sensor_msgs/msg/imu.hpp"
+#include "sensor_msgs/msg/nav_sat_fix.hpp"
 
 #include <fcntl.h>
 #include <termios.h>
@@ -49,7 +50,10 @@ private:
     const double yaw_rot_c_ = std::cos(theta / 2.0);
     const double yaw_rot_s_ = std::sin(theta / 2.0);
 
+    wirelink::msg::common::PeerEntry latest_peer_entry_self_;
+
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+    rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr filtered_sub_;
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr scalar_sub_;
     rclcpp::Subscription<msgs::msg::Mode>::SharedPtr mode_sub_;
     rclcpp::Subscription<msgs::msg::MotorPwm>::SharedPtr motor_pwm_sub_;
@@ -65,13 +69,13 @@ private:
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr imu_calib_pub_;
 
     void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg);
+    void filtered_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
     void scalar_callback(const std_msgs::msg::Float64::SharedPtr msg);
     void mode_callback(const msgs::msg::Mode::SharedPtr msg);
     void motor_pwm_callback(const msgs::msg::MotorPwm::SharedPtr msg);
     void config_callback(const msgs::msg::Config::SharedPtr msg);
 
-    uint8_t odom_seq_ = 0;
-    uint8_t scalar_seq_ = 0;
+    uint8_t broadcast_seq_ = 0;
     uint8_t mode_seq_ = 0;
     uint8_t heart_beat_seq_ = 0;
     uint8_t motor_pwm_seq_ = 0;

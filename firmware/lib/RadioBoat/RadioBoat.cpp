@@ -115,6 +115,7 @@ void Radio::transmit() {
     auto entry = piLink.received_states.poll<wirelink::msg::serial::BroadcastEntry>(wirelink::msg::serial::MsgType::BroadcastEntry);
     if (entry) {
         status.self = entry->self;
+        status.self.id = my_tx_id;
     } else {
         status.self.id = my_tx_id;
         status.self.lat = 0;

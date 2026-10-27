@@ -7,8 +7,12 @@ McuBridge::McuBridge() : Node("mcu_bridge") {
 
     init_serial();
 
+    latest_peer_entry_self_.id = this->declare_parameter("my_id", 1);
+
     odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
         "state/odom", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&McuBridge::odom_callback, this, std::placeholders::_1));
+    filtered_sub_ = this->create_subscription<sensor_msgs::msg::NavSatFix>(
+        "gps/filtered", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&McuBridge::filtered_callback, this, std::placeholders::_1));
     scalar_sub_ = this->create_subscription<std_msgs::msg::Float64>(
         "scalar", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&McuBridge::scalar_callback, this, std::placeholders::_1));
     mode_sub_ = this->create_subscription<msgs::msg::Mode>(
@@ -35,11 +39,39 @@ McuBridge::~McuBridge() {
 }
 
 void McuBridge::odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
-    return;
+    auto q = msg->pose.pose.orientation;
+    const double yaw_deg = 2.0 * std::atan2(q.z, q.w) * 180.0 / M_PI;
+    double heading = std::fmod(90.0 - yaw_deg, 360.0);
+    if (heading < 0.0) heading += 360.0;
+    latest_peer_entry_self_.heading_deg = static_cast<float>(heading);
+}
+
+void McuBridge::filtered_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg) {
+    latest_peer_entry_self_.lat = static_cast<int32_t>(msg->latitude * 1e7);
+    latest_peer_entry_self_.lon = static_cast<int32_t>(msg->longitude * 1e7);
+
+    wirelink::msg::serial::BroadcastEntry wirelink_msg;
+    wirelink_msg.self = latest_peer_entry_self_;
+
+    wirelink::Frame frame;
+    if (!wirelink::codec::pack(wirelink_msg, frame)) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to pack BroadcastEntry message");
+        return;
+    }
+    auto packet = wirelink::framing::wrap(frame, broadcast_seq_);
+    if (!packet) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to wrap BroadcastEntry frame");
+        return;
+    }
+    if (!send_packet(*packet)) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to send BroadcastEntry packet");
+        return;
+    }
+    broadcast_seq_++;
 }
 
 void McuBridge::scalar_callback(const std_msgs::msg::Float64::SharedPtr msg) {
-    return;
+    latest_peer_entry_self_.scalar = static_cast<float>(msg->data);
 }
 
 void McuBridge::mode_callback(const msgs::msg::Mode::SharedPtr msg) {
