@@ -1,12 +1,10 @@
 <launch>
-  <arg name="boat_id" default="$(command 'sh -c &quot;case `hostname` in boatoki) echo 1;; floatoki) echo 2;; moatoki) echo 3;; esac&quot;')"/>
-
   <node pkg="mcu_bridge" exec="mcu_bridge" name="mcu_bridge" output="screen">
     <param from="$(find-pkg-share bringup)/config/boat.yaml"/>
   </node>
 
   <node pkg="mode_manager" exec="mode_manager" name="mode_manager" output="screen">
-    <param name="my_id" value="$(var boat_id)"/>
+    <param name="my_id" value="$(env BOAT_ID)"/>
   </node>
 
   <node pkg="engineer" exec="engineer" name="engineer" output="screen"/>
