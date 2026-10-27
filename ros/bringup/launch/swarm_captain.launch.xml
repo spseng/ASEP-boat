@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="swarm_captain" exec="swarm_captain" name="swarm_captain" output="screen">
+    <param from="$(find-pkg-share bringup)/config/boat.yaml"/>
+  </node>
+</launch>

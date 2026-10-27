@@ -12,6 +12,11 @@
   <exec_depend>mcu_bridge</exec_depend>
   <exec_depend>mode_manager</exec_depend>
   <exec_depend>engineer</exec_depend>
+  <exec_depend>navigator</exec_depend>
+  <exec_depend>scalar_source</exec_depend>
+  <exec_depend>lookout</exec_depend>
+  <exec_depend>helmsman</exec_depend>
+  <exec_depend>swarm_captain</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
