@@ -17,6 +17,8 @@ public:
             "mcu/command_frame", rclcpp::QoS(rclcpp::KeepLast(10)).reliable(), std::bind(&ModeManager::command_frame_callback, this, std::placeholders::_1));
         mcu_status_sub_ = this->create_subscription<msgs::msg::McuStatus>(
             "mcu/status", rclcpp::QoS(rclcpp::KeepLast(5)).reliable(), std::bind(&ModeManager::mcu_status_callback, this, std::placeholders::_1));
+        cmd_vel_auto_sub_ = this->create_subscription<geometry_msgs::msg::TwistStamped>(
+            "cmd/vel_auto", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&ModeManager::cmd_vel_auto_callback, this, std::placeholders::_1));
 
         mode_pub_ = this->create_publisher<msgs::msg::Mode>("mode", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable());
         heart_beat_pub_ = this->create_publisher<msgs::msg::HeartBeat>("heart_beat", rclcpp::QoS(rclcpp::KeepLast(10)).best_effort());
@@ -39,6 +41,7 @@ private:
 
     rclcpp::Subscription<msgs::msg::CommandFrame>::SharedPtr command_frame_sub_;
     rclcpp::Subscription<msgs::msg::McuStatus>::SharedPtr mcu_status_sub_;
+    rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr cmd_vel_auto_sub_;
 
     rclcpp::Publisher<msgs::msg::Mode>::SharedPtr mode_pub_;
     rclcpp::Publisher<msgs::msg::HeartBeat>::SharedPtr heart_beat_pub_;
@@ -46,6 +49,11 @@ private:
     rclcpp::Publisher<msgs::msg::Config>::SharedPtr config_pub_;
 
     rclcpp::TimerBase::SharedPtr pub_timer_;
+
+    double last_manual_linear_x_ = 0.0;
+    double last_manual_angular_z_ = 0.0;
+    double last_auto_linear_x_ = 0.0;
+    double last_auto_angular_z_ = 0.0;
 
     void command_frame_callback(const msgs::msg::CommandFrame::SharedPtr msg) {
         if (msg->payload.size() > wirelink::msg::lora::MAX_LORA_PAYLOAD) {
@@ -56,7 +64,7 @@ private:
         std::copy(msg->payload.begin(), msg->payload.end(), payload.data.begin());
         payload.len = msg->payload.size();
 
-        switch (static_cast<wirelink::msg::lora::MsgType>(msg->type)) { // BAD!!!! THIS NEEDS TO BE FIXED WHEN AUTONOMOUS IS IMPLEMENTED
+        switch (static_cast<wirelink::msg::lora::MsgType>(msg->type)) {
             case wirelink::msg::lora::MsgType::Command: {
                 wirelink::msg::lora::Command wirelink_msg;
                 if (!wirelink::codec::unpack_bytes(msg->payload.data(), msg->payload.size(), wirelink_msg)) {
@@ -64,11 +72,9 @@ private:
                     return;
                 }
                 if (wirelink_msg.rx_id == my_id_) {
-                    geometry_msgs::msg::TwistStamped cmd_vel_msg;
-                    cmd_vel_msg.header.stamp = this->now();
-                    cmd_vel_msg.twist.linear.x = wirelink_msg.lin_vel / 1000.0; // Convert mm/s to m/s
-                    cmd_vel_msg.twist.angular.z = wirelink_msg.ang_vel / 1000.0; // Convert mrad/s to rad/s, no flip!!!
-                    cmd_vel_pub_->publish(cmd_vel_msg);
+                    last_manual_linear_x_ = wirelink_msg.lin_vel / 1000.0; // Convert mm/s to m/s
+                    last_manual_angular_z_ = wirelink_msg.ang_vel / 1000.0; // Convert mrad/s to rad/s, no flip!!!
+                    publish_cmd_vel();
                 }
             } break;
             case wirelink::msg::lora::MsgType::Heartbeat: {} break;
@@ -96,12 +102,25 @@ private:
                 }
                 current_mode_ = static_cast<boat::mode::Mode>(wirelink_msg.mode);
                 armed_state_ = static_cast<boat::mode::ArmedState>(wirelink_msg.armed);
+
+                last_manual_linear_x_ = 0.0;
+                last_manual_angular_z_ = 0.0;
+                last_auto_linear_x_ = 0.0;
+                last_auto_angular_z_ = 0.0;
+                publish_cmd_vel();
             } break;
         }
     }
+
     void mcu_status_callback(const msgs::msg::McuStatus::SharedPtr msg) {
         // Handle incoming MCU status messages
         RCLCPP_INFO(this->get_logger(), "Received McuStatus message");
+    }
+
+    void cmd_vel_auto_callback(const geometry_msgs::msg::TwistStamped::SharedPtr msg) {
+        last_auto_linear_x_ = msg->twist.linear.x;
+        last_auto_angular_z_ = msg->twist.angular.z;
+        publish_cmd_vel();
     }
 
     void publish_config() {
@@ -118,6 +137,34 @@ private:
         mode_msg.mode = static_cast<uint8_t>(current_mode_);
         mode_msg.armed = static_cast<uint8_t>(armed_state_);
         mode_pub_->publish(mode_msg);
+    }
+
+    void publish_cmd_vel() {
+        geometry_msgs::msg::TwistStamped cmd_vel_msg;
+        cmd_vel_msg.header.stamp = this->now();
+        cmd_vel_msg.header.frame_id = "base_link";
+        
+        if (armed_state_ == boat::mode::ArmedState::ARMED) {
+            if (current_mode_ == boat::mode::Mode::MANUAL) {
+                cmd_vel_msg.twist.linear.x = last_manual_linear_x_;
+                cmd_vel_msg.twist.angular.z = last_manual_angular_z_;
+            }
+            else if (current_mode_ == boat::mode::Mode::AUTONOMOUS) {
+                // For autonomous mode, you would typically get the desired velocities from another source
+                // Here we just set them to zero for demonstration purposes
+                cmd_vel_msg.twist.linear.x = last_auto_linear_x_;
+                cmd_vel_msg.twist.angular.z = last_auto_angular_z_;
+            }
+            else {
+                cmd_vel_msg.twist.linear.x = 0.0;
+                cmd_vel_msg.twist.angular.z = 0.0;
+            }
+        } else {
+            cmd_vel_msg.twist.linear.x = 0.0;
+            cmd_vel_msg.twist.angular.z = 0.0;
+        }
+
+        cmd_vel_pub_->publish(cmd_vel_msg);
     }
 };
 
