@@ -67,7 +67,7 @@ private:
                     geometry_msgs::msg::TwistStamped cmd_vel_msg;
                     cmd_vel_msg.header.stamp = this->now();
                     cmd_vel_msg.twist.linear.x = wirelink_msg.lin_vel / 1000.0; // Convert mm/s to m/s
-                    cmd_vel_msg.twist.angular.z = -wirelink_msg.ang_vel / 1000.0; // Convert mrad/s to rad/s, maybe flip because ENU
+                    cmd_vel_msg.twist.angular.z = wirelink_msg.ang_vel / 1000.0; // Convert mrad/s to rad/s, no flip!!!
                     cmd_vel_pub_->publish(cmd_vel_msg);
                 }
             } break;
