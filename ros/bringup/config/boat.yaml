@@ -10,3 +10,7 @@ swarm_captain:
     cohesion_max: 1.4
     cohesion_saturation_distance: 40.0
     k_descent: 7.0
+
+scalar_source:
+  ros__parameters:
+    use_simulated_scalar: false
