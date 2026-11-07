@@ -24,6 +24,10 @@ public:
 			RCLCPP_INFO(this->get_logger(), "Simulated field: %zu Gaussians", n);
 		}
 
+		use_simulated_scalar = this->declare_parameter("use_simulated_scalar", false);
+
+		raw_scalar_sub_ = this->create_subscription<std_msgs::msg::Float64>(
+			"raw_scalar", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&ScalarSource::raw_scalar_callback, this, std::placeholders::_1));
 		odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
 			"state/odom", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(), std::bind(&ScalarSource::odom_callback, this, std::placeholders::_1));
 		scalar_pub_ = this->create_publisher<std_msgs::msg::Float64>("scalar", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
@@ -32,6 +36,9 @@ private:
 
 	std::array<std::vector<double>, 4> simulated_peaks_; // x, y, amp, sigma
 
+	bool use_simulated_scalar;
+
+	rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr raw_scalar_sub_;
 	rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
 
 	rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr scalar_pub_;
@@ -49,9 +56,19 @@ private:
 			value += famp[i] * std::exp(-(dx*dx + dy*dy) / (2.0 * fsigma[i] * fsigma[i]));
 		}
 
-		std_msgs::msg::Float64 scalar_msg;
-		scalar_msg.data = value;
-		scalar_pub_->publish(scalar_msg);
+		if (use_simulated_scalar) {
+			std_msgs::msg::Float64 msg_out;
+			msg_out.data = value;
+			scalar_pub_->publish(msg_out);
+		}
+	}
+
+	void raw_scalar_callback(const std_msgs::msg::Float64::SharedPtr msg) {
+		if (!use_simulated_scalar) {
+			std_msgs::msg::Float64 msg_out;
+			msg_out.data = msg->data;
+			scalar_pub_->publish(msg_out);
+		}
 	}
 };
 

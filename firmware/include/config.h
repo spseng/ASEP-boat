@@ -28,4 +28,9 @@ namespace config {
     namespace ground_link {
         constexpr uint32_t BAUD_RATE = 115200;
     }
+
+    namespace probe {
+        constexpr uint32_t PERIOD_MS = 500; // 2Hz
+        constexpr uint32_t CONV_MS = 400; // 400ms, 11bit
+    }
 }

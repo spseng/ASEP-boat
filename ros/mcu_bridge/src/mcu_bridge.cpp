@@ -273,7 +273,16 @@ void McuBridge::dispatch(const wirelink::Frame& f) {
             }
             peer_table_pub_->publish(msg);
         }; break;
-        case wirelink::msg::serial::MsgType::OwnScalar: {}; break; // temprature probe yet to be implemented
+        case wirelink::msg::serial::MsgType::OwnScalar: {
+            wirelink::msg::serial::OwnScalar wirelink_msg;
+            if (!wirelink::codec::unpack(f, wirelink_msg)) {
+                RCLCPP_ERROR(this->get_logger(), "Failed to unpack OwnScalar message");
+                return;
+            }
+            std_msgs::msg::Float64 msg;
+            msg.data = static_cast<double>(wirelink_msg.scalar);
+            raw_scalar_pub_->publish(msg);
+        }; break;
         case wirelink::msg::serial::MsgType::ReceivedCommand: {
             wirelink::msg::serial::ReceivedCommand wirelink_msg;
             if (!wirelink::codec::unpack(f, wirelink_msg)) {

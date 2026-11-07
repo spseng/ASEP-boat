@@ -29,4 +29,6 @@ namespace pins {
 
     constexpr uint8_t GPS_RX = 4;
     constexpr uint8_t GPS_TX = 2;
+
+    constexpr uint8_t DS18B20 = 3;
 }

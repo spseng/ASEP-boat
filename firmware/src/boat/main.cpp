@@ -9,9 +9,11 @@
 #include <RadioBoat.h>
 #include <ModeManager.h>
 #include <Every.h>
+#include <Probe.h>
 
 PiLink piLink = PiLink();
 ModeManager modeManager = ModeManager(piLink);
+Probe probe = Probe(piLink);
 
 IMU bno = IMU(piLink);
 GPS gps = GPS(piLink);
@@ -28,6 +30,7 @@ void setup() {
     motorController.begin();
     bno.begin();
     gps.begin();
+    probe.begin();
 
     while (true) {
         piLink.update();
@@ -45,5 +48,6 @@ void loop() {
     if (imu_every()) bno.update();
     if (gps_every()) gps.update();
     modeManager.update();
+    probe.update();
     if (status_every()) modeManager.send_status(radio);
 }
