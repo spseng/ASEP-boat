@@ -30,6 +30,7 @@ McuBridge::McuBridge() : Node("mcu_bridge") {
     gps_vel_pub_ = this->create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>("gps/vel", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     raw_scalar_pub_ = this->create_publisher<std_msgs::msg::Float64>("raw_scalar", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     imu_calib_pub_ = this->create_publisher<std_msgs::msg::UInt8>("imu/calib_status", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
+    imu_mag_pub_ = this->create_publisher<sensor_msgs::msg::MagneticField>("imu/mag", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
 
     rx_timer_ = this->create_wall_timer(std::chrono::milliseconds(5), std::bind(&McuBridge::on_rx_tick, this));
 }
@@ -224,6 +225,12 @@ void McuBridge::dispatch(const wirelink::Frame& f) {
             std_msgs::msg::UInt8 calib_msg;
             calib_msg.data = wirelink_msg.calib_status;
             imu_calib_pub_->publish(calib_msg);
+
+            sensor_msgs::msg::MagneticField mag_msg;
+            mag_msg.magnetic_field.x = wirelink_msg.mag_x;
+            mag_msg.magnetic_field.y = wirelink_msg.mag_y;
+            mag_msg.magnetic_field.z = wirelink_msg.mag_z;
+            imu_mag_pub_->publish(mag_msg);
 
             last_yaw_ = std::atan2(2.0 * (msg.orientation.w * msg.orientation.z + msg.orientation.x * msg.orientation.y),
                 1.0 - 2.0 * (msg.orientation.y * msg.orientation.y + msg.orientation.z * msg.orientation.z));

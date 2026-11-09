@@ -35,6 +35,9 @@ namespace wirelink::msg::serial {
         float lin_acc_x;
         float lin_acc_y;
         float lin_acc_z;
+        float mag_x;
+        float mag_y;
+        float mag_z;
         uint8_t calib_status;
 
         template <class F>

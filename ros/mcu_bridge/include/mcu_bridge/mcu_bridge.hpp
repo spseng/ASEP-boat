@@ -14,6 +14,7 @@
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 #include "geometry_msgs/msg/twist_with_covariance_stamped.hpp"
 #include "sensor_msgs/msg/imu.hpp"
+#include "sensor_msgs/msg/magnetic_field.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 
 #include <fcntl.h>
@@ -69,6 +70,7 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::TwistWithCovarianceStamped>::SharedPtr gps_vel_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr raw_scalar_pub_;
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr imu_calib_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr imu_mag_pub_;
 
     void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg);
     void filtered_callback(const sensor_msgs::msg::NavSatFix::SharedPtr msg);

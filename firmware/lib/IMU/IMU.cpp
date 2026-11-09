@@ -28,6 +28,7 @@ void IMU::update() {
     imu::Quaternion q = bno.getQuat();
     imu::Vector<3> g = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
     imu::Vector<3> a = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
+    imu::Vector<3> m = bno.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
     uint8_t cSys, cGyro, cAccel, cMag;
     bno.getCalibration(&cSys, &cGyro, &cAccel, &cMag);
     int8_t boardTemp = bno.getTemp();
@@ -44,6 +45,9 @@ void IMU::update() {
     msg.lin_acc_x = a.x();
     msg.lin_acc_y = a.y();
     msg.lin_acc_z = a.z();
+    msg.mag_x = m.x();
+    msg.mag_y = m.y();
+    msg.mag_z = m.z();
     msg.calib_status = (cSys << 6) | (cGyro << 4) | (cAccel << 2) | cMag;
 
     wirelink::Frame frame;
