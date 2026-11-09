@@ -4,13 +4,13 @@ mcu_bridge:
 
 swarm_captain:
   ros__parameters:
-    k_avoidance: 6.0
-    avoidance_radius: 10.0
-    k_cohesion: 0.6
-    cohesion_max: 1.4
-    cohesion_saturation_distance: 40.0
-    k_descent: 7.0
+    k_avoidance: 0.3
+    avoidance_radius: 12.0
+    k_cohesion: 1.0
+    cohesion_max: 0.3
+    cohesion_saturation_distance: 20.0
+    k_descent: 0.15
 
 scalar_source:
   ros__parameters:
-    use_simulated_scalar: false
+    use_simulated_scalar: true

@@ -8,7 +8,7 @@ void Probe::begin() {
         oneWire.write(0x4E);
         oneWire.write(0x7F);
         oneWire.write(0x80);
-        oneWire.write(0x5F);
+        oneWire.write(0x7F);
     }
 }
 
@@ -55,7 +55,6 @@ bool Probe::readTemp(float& temp) {
     if (OneWire::crc8(data, 8) != data[8]) return false;
 
     int16_t raw = (data[1] << 8) | data[0];
-    raw &= ~1;
     if (raw == 0x0550) return false;
     temp = raw / 16.0f;
     return true;

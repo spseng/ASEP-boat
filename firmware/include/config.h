@@ -30,7 +30,7 @@ namespace config {
     }
 
     namespace probe {
-        constexpr uint32_t PERIOD_MS = 500; // 2Hz
-        constexpr uint32_t CONV_MS = 400; // 400ms, 11bit
+        constexpr uint32_t PERIOD_MS = 5000; // 0.2Hz
+        constexpr uint32_t CONV_MS = 800; // 800ms, 12bit
     }
 }
