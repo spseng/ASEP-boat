@@ -1,4 +1,4 @@
-# copy to /etc/systemd/system/boat.service
+# copy to /etc/systemd/system/boat-swarm-captain.service
 
 [Unit]
 Description=Boat ROS 2 launch
