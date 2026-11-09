@@ -12,7 +12,7 @@
 #include "msgs/msg/config.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
-#include "geometry_msgs/msg/twist_stamped.hpp"
+#include "geometry_msgs/msg/twist_with_covariance_stamped.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
 
@@ -64,7 +64,7 @@ private:
     rclcpp::Publisher<msgs::msg::McuStatus>::SharedPtr mcu_status_pub_;
     rclcpp::Publisher<msgs::msg::PeerTable>::SharedPtr peer_table_pub_;
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr gps_fix_pub_;
-    rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr gps_vel_pub_;
+    rclcpp::Publisher<geometry_msgs::msg::TwistWithCovarianceStamped>::SharedPtr gps_vel_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr raw_scalar_pub_;
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr imu_calib_pub_;
 

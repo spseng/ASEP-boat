@@ -27,7 +27,7 @@ McuBridge::McuBridge() : Node("mcu_bridge") {
     mcu_status_pub_ = this->create_publisher<msgs::msg::McuStatus>("mcu/status", rclcpp::QoS(rclcpp::KeepLast(5)).reliable());
     peer_table_pub_ = this->create_publisher<msgs::msg::PeerTable>("mcu/peer_table", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     gps_fix_pub_ = this->create_publisher<sensor_msgs::msg::NavSatFix>("gps/fix", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
-    gps_vel_pub_ = this->create_publisher<geometry_msgs::msg::TwistStamped>("gps/vel", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
+    gps_vel_pub_ = this->create_publisher<geometry_msgs::msg::TwistWithCovarianceStamped>("gps/vel", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     raw_scalar_pub_ = this->create_publisher<std_msgs::msg::Float64>("raw_scalar", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
     imu_calib_pub_ = this->create_publisher<std_msgs::msg::UInt8>("imu/calib_status", rclcpp::QoS(rclcpp::KeepLast(1)).best_effort());
 
@@ -248,11 +248,16 @@ void McuBridge::dispatch(const wirelink::Frame& f) {
             fix_msg.position_covariance_type = sensor_msgs::msg::NavSatFix::COVARIANCE_TYPE_APPROXIMATED;
             gps_fix_pub_->publish(fix_msg);
 
-            geometry_msgs::msg::TwistStamped vel_msg;
+            if (!fix_msg.status.status == sensor_msgs::msg::NavSatStatus::STATUS_NO_FIX) break;
+
+            geometry_msgs::msg::TwistWithCovarianceStamped vel_msg;
             vel_msg.header.stamp = this->now();
+            vel_msg.header.frame_id = "odom";
             const double cog = wirelink_msg.course_over_ground * M_PI / 180.0;
-            vel_msg.twist.linear.x = wirelink_msg.speed_over_ground * std::sin(cog); 
-            vel_msg.twist.linear.y = wirelink_msg.speed_over_ground * std::cos(cog);
+            vel_msg.twist.twist.linear.x = wirelink_msg.speed_over_ground * std::sin(cog); 
+            vel_msg.twist.twist.linear.y = wirelink_msg.speed_over_ground * std::cos(cog);
+            vel_msg.twist.covariance[0] = 0.04;
+            vel_msg.twist.covariance[7] = 0.04;
             gps_vel_pub_->publish(vel_msg);
         } break;
         case wirelink::msg::serial::MsgType::PeerTable: {
