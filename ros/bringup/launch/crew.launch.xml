@@ -15,6 +15,7 @@
 
   <node pkg="scalar_source" exec="scalar_source" name="scalar_source" output="screen">
     <param from="$(find-pkg-share bringup)/config/cites/concord_nh.yaml"/>
+    <param from="$(find-pkg-share bringup)/config/boat.yaml"/>
   </node>
 
   <node pkg="lookout" exec="lookout" name="lookout" output="screen">
