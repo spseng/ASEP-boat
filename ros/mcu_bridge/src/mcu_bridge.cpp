@@ -225,7 +225,8 @@ void McuBridge::dispatch(const wirelink::Frame& f) {
             calib_msg.data = wirelink_msg.calib_status;
             imu_calib_pub_->publish(calib_msg);
 
-            last_yaw_ = std::atan2((2 * (w * z + x * y)), 1 - (2 * (y * y + z * z)));
+            last_yaw_ = std::atan2(2.0 * (msg.orientation.w * msg.orientation.z + msg.orientation.x * msg.orientation.y),
+                1.0 - 2.0 * (msg.orientation.y * msg.orientation.y + msg.orientation.z * msg.orientation.z));
 
         } break;
         case wirelink::msg::serial::MsgType::GPS: {
