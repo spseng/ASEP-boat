@@ -1,0 +1,16 @@
+# copy to /etc/systemd/system/boat.service
+
+[Unit]
+Description=Boat ROS 2 launch
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=boat
+ExecStart=/bin/bash -c "source /home/boat/ws/src/ASEP-boat/tools/env.sh && exec ros2 launch bringup swarm_captain.launch.xml"
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
