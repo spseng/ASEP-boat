@@ -45,6 +45,7 @@ namespace wirelink::msg::serial {
             f(quat_x); f(quat_y); f(quat_z); f(quat_w);
             f(ang_vel_x); f(ang_vel_y); f(ang_vel_z);
             f(lin_acc_x); f(lin_acc_y); f(lin_acc_z);
+            f(mag_x); f(mag_y); f(mag_z);
             f(calib_status);
         }
     };
