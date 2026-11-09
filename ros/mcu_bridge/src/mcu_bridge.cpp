@@ -227,9 +227,9 @@ void McuBridge::dispatch(const wirelink::Frame& f) {
             imu_calib_pub_->publish(calib_msg);
 
             sensor_msgs::msg::MagneticField mag_msg;
-            mag_msg.magnetic_field.x = wirelink_msg.mag_x;
-            mag_msg.magnetic_field.y = wirelink_msg.mag_y;
-            mag_msg.magnetic_field.z = wirelink_msg.mag_z;
+            mag_msg.magnetic_field.x = wirelink_msg.mag_x * 1e-6;
+            mag_msg.magnetic_field.y = wirelink_msg.mag_y * 1e-6;
+            mag_msg.magnetic_field.z = wirelink_msg.mag_z * 1e-6;
             imu_mag_pub_->publish(mag_msg);
 
             last_yaw_ = std::atan2(2.0 * (msg.orientation.w * msg.orientation.z + msg.orientation.x * msg.orientation.y),
