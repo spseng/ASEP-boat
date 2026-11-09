@@ -224,6 +224,9 @@ void McuBridge::dispatch(const wirelink::Frame& f) {
             std_msgs::msg::UInt8 calib_msg;
             calib_msg.data = wirelink_msg.calib_status;
             imu_calib_pub_->publish(calib_msg);
+
+            last_yaw_ = std::atan2((2 * (w * z + x * y)), 1 - (2 * (y * y + z * z)));
+
         } break;
         case wirelink::msg::serial::MsgType::GPS: {
             wirelink::msg::serial::GPS wirelink_msg;
@@ -248,14 +251,20 @@ void McuBridge::dispatch(const wirelink::Frame& f) {
             fix_msg.position_covariance_type = sensor_msgs::msg::NavSatFix::COVARIANCE_TYPE_APPROXIMATED;
             gps_fix_pub_->publish(fix_msg);
 
-            if (!fix_msg.status.status == sensor_msgs::msg::NavSatStatus::STATUS_NO_FIX) break;
+            if (fix_msg.status.status == sensor_msgs::msg::NavSatStatus::STATUS_NO_FIX) break;
+
+            const double cog = wirelink_msg.course_over_ground * M_PI / 180.0;
+            const double v_east  = wirelink_msg.speed_over_ground * std::sin(cog);
+            const double v_north = wirelink_msg.speed_over_ground * std::cos(cog);
+
+            const double cy = std::cos(last_yaw_);
+            const double sy = std::sin(last_yaw_);
 
             geometry_msgs::msg::TwistWithCovarianceStamped vel_msg;
             vel_msg.header.stamp = this->now();
-            vel_msg.header.frame_id = "odom";
-            const double cog = wirelink_msg.course_over_ground * M_PI / 180.0;
-            vel_msg.twist.twist.linear.x = wirelink_msg.speed_over_ground * std::sin(cog); 
-            vel_msg.twist.twist.linear.y = wirelink_msg.speed_over_ground * std::cos(cog);
+            vel_msg.header.frame_id = "base_link";
+            vel_msg.twist.twist.linear.x =  cy * v_east + sy * v_north;
+            vel_msg.twist.twist.linear.y = -sy * v_east + cy * v_north;
             vel_msg.twist.covariance[0] = 0.04;
             vel_msg.twist.covariance[7] = 0.04;
             gps_vel_pub_->publish(vel_msg);

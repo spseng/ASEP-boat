@@ -50,6 +50,8 @@ private:
     const double yaw_rot_c_ = std::cos(theta / 2.0);
     const double yaw_rot_s_ = std::sin(theta / 2.0);
 
+    double last_yaw_ = 0.0;
+
     wirelink::msg::common::PeerEntry latest_peer_entry_self_;
 
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
