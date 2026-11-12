@@ -20,9 +20,9 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr cmd_vel_auto_pub_;
 
     double current_yaw_ = 0.0;
-    const double linear_threshold_deg_ = 10.0; // Threshold angle in degrees for
+    const double linear_threshold_deg_ = 30.0; // Threshold angle in degrees for
     const double heading_deadzone_eps_ = 0.01; // Deadzone for heading control
-    const double heading_tiebreak_rate_ = 0.1; // Rate to apply
+    const double heading_tiebreak_rate_ = 0.5; // Rate to apply
 
     geometry_msgs::msg::TwistStamped desired_to_cmd_vel(const geometry_msgs::msg::Vector3Stamped & desired_vel) {
         geometry_msgs::msg::TwistStamped cmd_vel;
@@ -39,7 +39,7 @@ private:
         if (std::abs(fy) < heading_deadzone_eps_ && fx < 0.0) {
             cmd_vel.twist.angular.z = heading_tiebreak_rate_;
         } else {
-            cmd_vel.twist.angular.z = fy;
+            cmd_vel.twist.angular.z = 4.0 * fy;
         }
         return cmd_vel;
     };
